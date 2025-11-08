@@ -1,0 +1,35 @@
+<nav class="navbar">
+  <div class="navbar-logo">
+    <a routerLink="/home">📊 QueryLens</a>
+  </div>
+
+  <!-- Animated Hamburger Icon -->
+  <button class="menu-toggle" (click)="toggleMenu()">
+    <span [class.open]="menuOpen"></span>
+    <span [class.open]="menuOpen"></span>
+    <span [class.open]="menuOpen"></span>
+  </button>
+
+  <ul class="navbar-links" [class.open]="menuOpen">
+    <li><a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">{{ 'NAV.HOME' | translate }}</a></li>
+    <li><a routerLink="/dashboard" routerLinkActive="active">{{ 'NAV.DASHBOARD' | translate }}</a></li>
+    <li><a routerLink="/listDashboard" routerLinkActive="active">{{ 'NAV.LIST_DASHBOARD' | translate }}</a></li>
+    <li><a routerLink="/createDashboard" routerLinkActive="active">{{ 'NAV.CREATE_DASHBOARD' | translate }}</a></li>
+    <li><a routerLink="/buildQuery" routerLinkActive="active">{{ 'BUILDQUERY.BUILDQUERY' | translate }}</a></li>
+
+    <li>
+      <button (click)="toggleTheme()">
+        {{ (isDark ? 'THEME.LIGHT' : 'THEME.DARK') | translate }}
+      </button>
+
+    </li>
+
+    <li>
+      <select (change)="onLanguageChange($event)" [value]="currentLang">        
+        <option value="en">{{ 'LANG.ENGLISH' | translate }}</option>
+        <option value="fr">{{ 'LANG.FRENCH' | translate }}</option>
+        <option value="ar">{{ 'LANG.ARABIC' | translate }}</option>
+      </select>
+    </li>
+  </ul>
+</nav>

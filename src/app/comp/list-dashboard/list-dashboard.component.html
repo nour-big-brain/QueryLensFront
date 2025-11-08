@@ -1,0 +1,12 @@
+<div class="dashboard-list">
+    @for(dash of dashboards;track $index){
+        <div class="dashboard-card" (click)="viewDashboard(dash._id)">
+            <h3>{{ dash.name }}</h3>
+            <p>{{ dash.description }}</p>
+        </div>
+    }@empty{
+        <div>
+            <div>no elements in list.</div>
+        </div>
+    }
+</div>

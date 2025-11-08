@@ -1,0 +1,35 @@
+{
+    "NAV": {
+        "HOME": "Home",
+        "DASHBOARD": "Dashboard",
+        "LIST_DASHBOARD": "List Dashboard",
+        "CREATE_DASHBOARD": "Create Dashboard"
+    },
+    "THEME": {
+        "LIGHT": "Light Mode 🌞",
+        "DARK": "Dark Mode 🌙"
+    },
+    "LANG": {
+        "ENGLISH": "English",
+        "FRENCH": "Français",
+        "ARABIC": "Arabic"
+    },
+    "HOME":{
+        "WELCOME_MESSAGE1": "Welcome to ",
+        "WELCOME_MESSAGE2": "My BI Dashboard",
+        "DESCRIPTION": "Unlock insights, analyze data, and make smarter decisions."
+    },
+    "BUILDQUERY": {
+        "BUILDQUERY": "build query"
+    },
+    "CREATE_DASHBOARD_PAGE": {
+    "TITLE": "Create New Dashboard",
+    "NAME_LABEL": "Dashboard Name",
+    "NAME_PLACEHOLDER": "Enter dashboard name",
+    "DESCRIPTION_LABEL": "Description",
+    "DESCRIPTION_PLACEHOLDER": "Enter dashboard description",
+    "RESET_BTN": "Reset",
+    "CREATE_BTN": "Create",
+    "SUCCESS_MSG": "✅ Dashboard \"{{name}}\" created successfully!"
+  }
+}

@@ -1,0 +1,67 @@
+/* ========== Tooltip Styling (No color overrides) ========== */
+/*
+:host ::ng-deep .apexcharts-tooltip {
+  border-radius: 8px !important;
+}
+
+:host ::ng-deep .apexcharts-tooltip-title {
+  font-weight: 600 !important;
+  padding: 8px 12px !important;
+  font-size: 13px !important;
+}
+
+:host ::ng-deep .apexcharts-tooltip-text-y-label {
+  font-weight: 500 !important;
+}
+
+:host ::ng-deep .apexcharts-tooltip-text-y-value {
+  font-weight: 700 !important;
+  margin-left: 8px !important;
+}
+
+:host ::ng-deep .apexcharts-tooltip-series-group {
+  padding: 8px 12px !important;
+}
+
+:host ::ng-deep .apexcharts-tooltip-marker {
+  margin-right: 8px !important;
+}
+  */
+
+/* ========== Legend Styling ========== */
+/*
+:host ::ng-deep .apexcharts-legend {
+  padding: 12px !important;
+}
+
+:host ::ng-deep .apexcharts-legend-series {
+  margin: 4px 8px !important;
+}
+
+:host ::ng-deep .apexcharts-legend-text {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+}
+  */
+
+/* ========== Chart Container ========== */
+/*
+:host ::ng-deep .apexcharts-canvas {
+  background: transparent !important;
+}
+*/
+/* ========== Title ========== */
+/*
+:host ::ng-deep .apexcharts-title-text {
+  font-weight: 600 !important;
+  font-size: 16px !important;
+}
+*/
+/* ========== Axis Labels ========== */
+/*
+:host ::ng-deep .apexcharts-xaxis-label,
+:host ::ng-deep .apexcharts-yaxis-label {
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+  */

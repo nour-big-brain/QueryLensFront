@@ -1,0 +1,83 @@
+.dashboard-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.8rem;
+  padding: 2rem;
+  background: var(--page-bg);
+  border-radius: 20px;
+  min-height: 200px;
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+.dashboard-card {
+  position: relative;
+  background: var(--card-bg);
+  border-radius: 18px;
+  padding: 1.6rem 1.4rem;
+  box-shadow: var(--card-shadow);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.dashboard-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.08), rgba(56, 189, 248, 0.06));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: inherit;
+  z-index: 0;
+}
+
+.dashboard-card:hover::before {
+  opacity: 1;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: var(--card-shadow-hover);
+  border-color: var(--accent-color);
+}
+
+.dashboard-card h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 0.7rem;
+  position: relative;
+  z-index: 1;
+  transition: color 0.2s ease;
+}
+
+.dashboard-card:hover h3 {
+  color: var(--accent-color);
+}
+
+.dashboard-card p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  max-height: 4.2em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+  z-index: 1;
+}
+
+.dashboard-list .empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--text-secondary);
+  font-style: italic;
+  padding: 3rem 0;
+  font-size: 1.05rem;
+}
+
+/* subtle entrance animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
