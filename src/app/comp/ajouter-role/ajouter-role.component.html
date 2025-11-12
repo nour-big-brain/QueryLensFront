@@ -1,0 +1,36 @@
+<div class="container">
+  <h1 class="title">Ajouter Rôle</h1>
+  <div class="form-container">
+    <form [formGroup]="AddForm">
+      
+      <!-- Name -->
+      <label>Nom du Rôle:</label>
+      <input type="text" formControlName="name" placeholder="Nom du rôle..." />
+      @if(AddForm.get('name')?.invalid && AddForm.get('name')?.touched){
+        <p class="alert alert-danger">Le nom du rôle est requis.</p>
+      }
+
+      <!-- Description -->
+      <label>Description:</label>
+      <textarea formControlName="description" placeholder="Description du rôle..."></textarea>
+
+      <!-- Permissions -->
+      <label>Permissions:</label>
+      <div formArrayName="permissions">
+        @for (perm of permissions.controls; track $index) {
+          <div>
+            <input [formControlName]="$index" placeholder="Ex: read, write..." />
+            @if (permissions.length > 1) {
+              <button type="button" (click)="removePermission($index)">❌</button>
+            }
+          </div>
+        }
+      </div>
+      <button type="button" (click)="addPermission()">+ Ajouter une permission</button>
+
+      <button type="button" (click)="onSubmit()" [disabled]="AddForm.invalid">Ajouter</button>
+    </form>
+  </div>
+
+  <button (click)="Retour()" class="return-button">Annuler</button>
+</div>

@@ -1,0 +1,35 @@
+{
+    "NAV": {
+        "HOME": "Accueil",
+        "DASHBOARD": "Tableau de bord",
+        "LIST_DASHBOARD": "Liste des tableaux",
+        "CREATE_DASHBOARD": "Créer un tableau"
+    },
+    "THEME": {
+        "LIGHT": "Mode Clair 🌞",
+        "DARK": "Mode Sombre 🌙"
+    },
+    "LANG": {
+        "ENGLISH": "Anglais",
+        "FRENCH": "Français",
+        "ARABIC": "Arabe"
+    },
+    "HOME": {
+        "WELCOME_MESSAGE1": "Bienvenue sur ",
+        "WELCOME_MESSAGE2": "mon tableau de bord BI",
+        "DESCRIPTION": "Découvrez les insights, analysez les données et prenez de meilleures décisions."
+    },
+    "BUILDQUERY": {
+        "BUILDQUERY": "construire une requête"
+    },
+    "CREATE_DASHBOARD_PAGE": {
+        "TITLE": "Créer un nouveau tableau",
+        "NAME_LABEL": "Nom du tableau",
+        "NAME_PLACEHOLDER": "Entrez le nom du tableau",
+        "DESCRIPTION_LABEL": "Description",
+        "DESCRIPTION_PLACEHOLDER": "Entrez la description du tableau",
+        "RESET_BTN": "Réinitialiser",
+        "CREATE_BTN": "Créer",
+        "SUCCESS_MSG": "✅ Tableau \"{{name}}\" créé avec succès !"
+    }
+}

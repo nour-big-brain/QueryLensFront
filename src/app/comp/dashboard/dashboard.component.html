@@ -1,0 +1,115 @@
+<div *ngIf="isLoading" class="loading-container">
+  <p>Loading dashboard...</p>
+</div>
+
+<div *ngIf="!isLoading && dashboardData" class="dashboard-full-layout" [class.sidebar-hidden]="!showCommentsSidebar">
+  <!-- LEFT SIDE: Dashboard with Charts -->
+  <div class="dashboard-main">
+    <div class="dashboard-header">
+      <div class="header-top">
+        <div>
+          <h2>{{ dashboardData.name }}</h2>
+          <p>{{ dashboardData.description }}</p>
+          <small>Owner: {{ dashboardData.ownerName }} | Last updated: {{ dashboardData.updatedAt | date:'short' }}</small>
+        </div>
+        <button class="toggle-sidebar-btn" (click)="toggleCommentsSidebar()" title="Toggle comments">
+          {{ showCommentsSidebar ? '✕ Hide' : '💬 Show' }}
+        </button>
+      </div>
+    </div>
+
+    <ng-container *ngIf="charts && charts.length > 0; else noCharts">
+      <gridster [options]="options" class="gridster-wrapper">
+        <gridster-item *ngFor="let chart of charts; let i = index" [item]="{x: (i % 2) * 6, y: Math.floor(i / 2) * 4, cols: 6, rows: 4}">
+          <div class="chart-container">
+            <h3>{{ chart.title }}</h3>
+            <p *ngIf="chart.description" class="chart-description">{{ chart.description }}</p>
+           
+            <ng-container [ngSwitch]="chart.type">
+              <app-area-chart *ngSwitchCase="'area'" [payload]="chart"></app-area-chart>
+              <app-bar-chart *ngSwitchCase="'bar'" [payload]="chart"></app-bar-chart>
+              <app-line-chart *ngSwitchCase="'line'" [payload]="chart"></app-line-chart>
+              <app-pie-chart *ngSwitchCase="'pie'" [payload]="chart"></app-pie-chart>
+              <app-donut-chart *ngSwitchCase="'donut'" [payload]="chart"></app-donut-chart>
+              <app-radar-chart *ngSwitchCase="'radar'" [payload]="chart"></app-radar-chart>
+              <app-heatmap-chart *ngSwitchCase="'heatmap'" [payload]="chart"></app-heatmap-chart>
+              <app-scatter-chart *ngSwitchCase="'scatter'" [payload]="chart"></app-scatter-chart>
+              <app-mixed-chart *ngSwitchCase="'mixed'" [payload]="chart"></app-mixed-chart>
+              <div *ngSwitchDefault class="unknown-chart">
+                <p>Unknown chart type: {{ chart.type }}</p>
+              </div>
+            </ng-container>
+          </div>
+        </gridster-item>
+      </gridster>
+    </ng-container>
+    <ng-template #noCharts>
+      <div class="no-charts-container">
+        <p>No charts are in this dashboard.</p>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- RIGHT SIDE: Comments Section (Like Live Chat) -->
+  <div class="comments-sidebar" *ngIf="showCommentsSidebar">
+    <!-- Comments Header -->
+    <div class="comments-header">
+      <h3>💬 Comments ({{ comments.length }})</h3>
+    </div>
+
+    <!-- Comments List -->
+    <div class="comments-scroll">
+      <div *ngIf="!commentsLoading && comments && comments.length > 0; else noComments">
+        <div *ngFor="let comment of comments" class="comment-message">
+          <div class="comment-avatar">{{ comment.username.charAt(0).toUpperCase() }}</div>
+          <div class="comment-body">
+            <div class="comment-author">
+              <strong>{{ comment.username }}</strong>
+              <span class="comment-time">{{ comment.createdAt | date:'short' }}</span>
+              <button 
+                *ngIf="comment.userId === currentUserId && comment._id" 
+                class="btn-delete-comment" 
+                (click)="deleteComment(comment._id)"
+                title="Delete comment"
+              >
+                ✕
+              </button>
+            </div>
+            <p class="comment-text">{{ comment.text }}</p>
+          </div>
+        </div>
+      </div>
+      <ng-template #noComments>
+        <div class="no-comments-yet">
+          <p *ngIf="!commentsLoading">No comments yet. Be the first to comment!</p>
+          <p *ngIf="commentsLoading">Loading comments...</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Comment Input -->
+    <div class="comment-input-section">
+      <label class="input-label">Add a comment</label>
+      <div class="input-group">
+        <input 
+          type="text" 
+          [(ngModel)]="newComment" 
+          placeholder="Type something..."
+          class="comment-input"
+          (keyup.enter)="addComment()"
+        />
+        <button 
+          class="btn-send" 
+          (click)="addComment()"
+          [disabled]="!newComment.trim()"
+        >
+          Send
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="!isLoading && !dashboardData" class="error-container">
+  <p>Dashboard not found or failed to load.</p>
+</div>

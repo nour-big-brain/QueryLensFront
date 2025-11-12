@@ -1,0 +1,199 @@
+<div class="container">
+  <h1>Data Source Manager</h1>
+
+  <!-- Alerts -->
+  @if (error) {
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      {{ error }}
+      <button type="button" class="btn-close" (click)="error = null"></button>
+    </div>
+  }
+
+  @if (success) {
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      {{ success }}
+      <button type="button" class="btn-close" (click)="success = null"></button>
+    </div>
+  }
+
+  <div class="row">
+    <!-- Form Section -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h5>Create New Data Source</h5>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="form">
+            <div class="mb-3">
+              <label for="name" class="form-label">Data Source Name</label>
+              <input type="text" class="form-control" id="name" formControlName="name"
+                [class.is-invalid]="form.get('name')?.invalid && form.get('name')?.touched">
+              @if (form.get('name')?.invalid && form.get('name')?.touched) {
+                <div class="invalid-feedback">
+                  Name is required (min 3 characters)
+                </div>
+              }
+            </div>
+
+            <div class="mb-3">
+              <label for="type" class="form-label">Database Type</label>
+              <select class="form-select" id="type" formControlName="type">
+                <option value="sql">SQL</option>
+                <option value="nosql">NoSQL</option>
+                <option value="api">API</option>
+              </select>
+            </div>
+
+            <h6>Connection Credentials</h6>
+
+            <div class="mb-3">
+              <label for="host" class="form-label">Host</label>
+              <input type="text" class="form-control" id="host" formControlName="host"
+                placeholder="localhost"
+                [class.is-invalid]="form.get('host')?.invalid && form.get('host')?.touched">
+            </div>
+
+            <div class="mb-3">
+              <label for="port" class="form-label">Port</label>
+              <input type="number" class="form-control" id="port" formControlName="port"
+                [class.is-invalid]="form.get('port')?.invalid && form.get('port')?.touched">
+            </div>
+
+            <div class="mb-3">
+              <label for="database" class="form-label">Database Name</label>
+              <input type="text" class="form-control" id="database" formControlName="database"
+                [class.is-invalid]="form.get('database')?.invalid && form.get('database')?.touched">
+            </div>
+
+            <div class="mb-3">
+              <label for="username" class="form-label">Username</label>
+              <input type="text" class="form-control" id="username" formControlName="username"
+                [class.is-invalid]="form.get('username')?.invalid && form.get('username')?.touched">
+            </div>
+
+            <div class="mb-3">
+              <label for="password" class="form-label">Password</label>
+              <input type="password" class="form-control" id="password" formControlName="password"
+                [class.is-invalid]="form.get('password')?.invalid && form.get('password')?.touched">
+            </div>
+
+           <div class="d-grid gap-2">
+  <button type="button" class="btn btn-primary" (click)="createDataSource()" 
+          [class.btn-warning]="isMissingCriticalFields && !loading"
+          [disabled]="loading">
+    @if (loading) {
+      <span class="spinner-border spinner-border-sm me-2"></span>
+      Creating...
+    } @else {
+      @if (isMissingCriticalFields) {
+        Try Anyway (some fields missing)
+      } @else {
+        Create Data Source
+      }
+    }
+  </button>
+
+  <!-- Optional: show warning below button -->
+  @if (isMissingCriticalFields && !loading) {
+    <div class="text-warning small mt-2">
+      Warning: Missing name, host, or database. Might fail to connect.
+    </div>
+  }
+
+  <button type="button" class="btn btn-secondary" (click)="resetForm()">
+    Clear Form
+  </button>
+</div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Source Info Section -->
+    <div class="col-md-6">
+      @if (dataSource) {
+        <div class="card">
+          <div class="card-header">
+            <h5>Data Source Details</h5>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label class="form-label"><strong>Name:</strong></label>
+              <p>{{ dataSource.name }}</p>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label"><strong>Type:</strong></label>
+              <p>{{ dataSource.type }}</p>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label"><strong>Data Source ID:</strong></label>
+              <p><code>{{ dataSource._id }}</code></p>
+            </div>
+
+            @if (dataSource.metabaseDbId) {
+              <div class="mb-3">
+                <label class="form-label"><strong>Metabase Database ID:</strong></label>
+                <p><code>{{ dataSource.metabaseDbId }}</code></p>
+              </div>
+            }
+
+            <div class="mb-3">
+              <label class="form-label"><strong>Connection Details:</strong></label>
+              <p>
+                {{ dataSource.connectionCredentials.host }}:
+                {{ dataSource.connectionCredentials.port }}/
+                {{ dataSource.connectionCredentials.database }}
+              </p>
+            </div>
+
+            @if (dataSource.createdAt) {
+              <div class="mb-3">
+                <label class="form-label"><strong>Created:</strong></label>
+                <p>{{ dataSource.createdAt | date:'medium' }}</p>
+              </div>
+            }
+
+            @if (syncStatus) {
+              <div class="alert alert-info">
+                {{ syncStatus }}
+              </div>
+            }
+
+            <div class="d-grid gap-2">
+              <button type="button" class="btn btn-success" (click)="syncToMetabase()"
+                [disabled]="!dataSource._id || loading">
+                @if (loading) {
+                  <span class="spinner-border spinner-border-sm me-2"></span>
+                }
+                {{ loading ? 'Syncing...' : 'Sync to Metabase' }}
+              </button>
+
+              <button type="button" class="btn btn-info" (click)="getDataSourceDetails()"
+                [disabled]="!dataSource._id || loading">
+                Refresh Details
+              </button>
+            </div>
+
+            @if (metabaseInfo) {
+              <div class="mt-4 p-3 bg-light border rounded">
+                <h6>Metabase Info</h6>
+                <p><strong>ID:</strong> {{ metabaseInfo.id }}</p>
+                <p><strong>Name:</strong> {{ metabaseInfo.name }}</p>
+                <p><strong>Engine:</strong> {{ metabaseInfo.engine }}</p>
+              </div>
+            }
+          </div>
+        </div>
+      } @else {
+        <div class="card">
+          <div class="card-body text-center text-muted">
+            <p>Create a data source to see details here</p>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>

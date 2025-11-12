@@ -1,0 +1,117 @@
+  /* Wrapper to center the form and give some spacing */
+  .create-page-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 60px 20px;
+    background-color: var(--page-bg);
+    transition: background-color 0.4s ease, color 0.4s ease;
+  }
+
+  /* Card styling */
+  .dashboard-form-card {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    padding: 40px 30px;
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+    max-width: 500px;
+    width: 100%;
+    transition: background-color 0.4s ease, color 0.4s ease, box-shadow 0.4s ease;
+  }
+
+  /* Heading */
+  .dashboard-form-card h2 {
+    margin-bottom: 30px;
+    font-size: 28px;
+    font-weight: 600;
+    text-align: center;
+    color: var(--text-color);
+  }
+
+  /* Form groups */
+  .form-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Labels */
+  .form-group label {
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--text-color);
+  }
+
+  /* Inputs and Textareas */
+  .form-group input,
+  .form-group textarea {
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    font-size: 14px;
+    resize: vertical;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+  }
+
+  /* Action buttons container */
+  .form-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+  }
+
+  /* Create button */
+  button.btn-create {
+    flex: 1;
+    padding: 12px 0;
+    margin-left: 10px;
+    background-color: var(--accent-color);
+    color: #fff;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  button.btn-create:hover {
+    background-color: var(--accent-color-hover);
+  }
+
+  /* Reset button */
+  button.btn-reset {
+    flex: 1;
+    padding: 12px 0;
+    margin-right: 10px;
+    background-color: var(--btn-secondary-bg);
+    color: var(--btn-secondary-text);
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  button.btn-reset:hover {
+    background-color: var(--btn-secondary-hover);
+  }
+
+  /* Success message */
+  .success-message {
+    margin-top: 25px;
+    font-weight: 500;
+    color: var(--success-color);
+    text-align: center;
+    font-size: 15px;
+  }

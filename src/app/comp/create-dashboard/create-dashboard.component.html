@@ -1,0 +1,40 @@
+<div class="create-page-wrapper">
+  <div class="dashboard-form-card">
+    <h2>{{ 'CREATE_DASHBOARD_PAGE.TITLE' | translate }}</h2>
+
+    <div class="form-group">
+      <label for="name">{{ 'CREATE_DASHBOARD_PAGE.NAME_LABEL' | translate }}</label>
+      <input
+        id="name"
+        type="text"
+        [(ngModel)]="newDashboardName"
+        [placeholder]="'CREATE_DASHBOARD_PAGE.NAME_PLACEHOLDER' | translate"
+        required />
+    </div>
+
+    <div class="form-group">
+      <label for="description">{{ 'CREATE_DASHBOARD_PAGE.DESCRIPTION_LABEL' | translate }}</label>
+      <textarea
+        id="description"
+        [(ngModel)]="newDashboardDescription"
+        [placeholder]="'CREATE_DASHBOARD_PAGE.DESCRIPTION_PLACEHOLDER' | translate"
+        required>
+      </textarea>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-reset" (click)="onReset()">
+        {{ 'CREATE_DASHBOARD_PAGE.RESET_BTN' | translate }}
+      </button>
+      <button class="btn-create" (click)="createDashboard()">
+        {{ 'CREATE_DASHBOARD_PAGE.CREATE_BTN' | translate }}
+      </button>
+    </div>
+
+    @if (isCreated) {
+      <p class="success-message">
+        {{ 'CREATE_DASHBOARD_PAGE.SUCCESS_MSG' | translate:{ name: dashboard.name } }}
+      </p>
+    }
+  </div>
+</div>
