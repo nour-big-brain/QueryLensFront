@@ -263,3 +263,61 @@ button.btn-reset:hover:not(:disabled) {
     width: 100%;
   }
 }
+.datasource-container {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.datasource-container select {
+  flex: 1;
+}
+
+.btn-sync {
+  padding: 8px 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background-color 0.3s;
+}
+
+.btn-sync:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+.btn-sync:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #ffffff;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin-right: 5px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.btn-sync {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.9rem;
+}
+
+.synced-check {
+  color: #28a745;               /* green */
+  font-weight: 600;
+}

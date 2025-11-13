@@ -3,90 +3,166 @@
     <h2>Build Query</h2>
 
     @if (error) {
-      <div class="alert alert-error">
-        {{ error }}
-      </div>
+    <div class="alert alert-error">{{ error }}</div>
     }
 
     @if (success) {
-      <div class="alert alert-success">
-        {{ success }}
-      </div>
+    <div class="alert alert-success">{{ success }}</div>
     }
 
-    <form [formGroup]="buildQueryForm" (ngSubmit)="createQuery()">
+    <form [formGroup]="buildQueryForm">
+      <!-- Title -->
       <div class="form-group">
         <label for="title">Title <span class="required">*</span></label>
         <input
           id="title"
           type="text"
           formControlName="title"
-          placeholder="Enter query title"
-          [class.is-invalid]="buildQueryForm.get('title')?.invalid && buildQueryForm.get('title')?.touched"
+          placeholder="e.g., Monthly Sales Report"
+          [class.is-invalid]="
+            buildQueryForm.get('title')?.invalid &&
+            buildQueryForm.get('title')?.touched
+          "
         />
-        @if (buildQueryForm.get('title')?.invalid && buildQueryForm.get('title')?.touched) {
-          <small class="error-text">Title is required (min 3 characters)</small>
+        @if (
+          buildQueryForm.get('title')?.invalid &&
+          buildQueryForm.get('title')?.touched
+        ) {
+        <small class="error-text"
+          >Title is required (min 3 characters)</small
+        >
         }
       </div>
 
+      <!-- Description -->
       <div class="form-group">
         <label for="description">Description <span class="required">*</span></label>
         <textarea
           id="description"
           formControlName="description"
-          placeholder="Enter query description"
-          rows="3"
-          [class.is-invalid]="buildQueryForm.get('description')?.invalid && buildQueryForm.get('description')?.touched"
+          placeholder="What does this query do?"
+          rows="2"
+          [class.is-invalid]="
+            buildQueryForm.get('description')?.invalid &&
+            buildQueryForm.get('description')?.touched
+          "
         ></textarea>
-        @if (buildQueryForm.get('description')?.invalid && buildQueryForm.get('description')?.touched) {
-          <small class="error-text">Description is required</small>
+        @if (
+          buildQueryForm.get('description')?.invalid &&
+          buildQueryForm.get('description')?.touched
+        ) {
+        <small class="error-text">Description is required</small>
         }
       </div>
+<!-- Data Source Dropdown with Sync Button -->
+<div class="form-group">
+  <label for="dataSource">Data Source <span class="required">*</span></label>
+  <div class="datasource-container">
+    @if (loadingDataSources) {
+      <div class="loading">Loading data sources...</div>
+    } @else {
+      <select
+        id="dataSource"
+        formControlName="dataSource"
+        (change)="onDataSourceChange($any($event.target).value)"
+        [class.is-invalid]="buildQueryForm.get('dataSource')?.invalid && buildQueryForm.get('dataSource')?.touched">
+        <option value="">Select a data source...</option>
+        @for (ds of dataSources; track ds._id) {
+          <option [value]="ds._id">
+            {{ ds.name }} (Metabase ID: {{ ds.metabaseDbId || 'Not synced' }})
+          </option>
+        }
+      </select>
 
+      @if (selectedDataSourceId) {
+        <button
+          type="button"
+          class="btn-sync"
+          (click)="syncDataSource(selectedDataSourceId)"
+          [disabled]="getSyncStatus(selectedDataSourceId) === 'syncing'">
+          <!-- spinner while syncing -->
+          @if (getSyncStatus(selectedDataSourceId) === 'syncing') {
+            <span class="spinner"></span>
+            Syncing...
+          } @else if (getSyncStatus(selectedDataSourceId) === 'synced') {
+            <span class="synced-check">Synced</span>
+          } @else {
+            Sync
+          }
+        </button>
+      }
+    }
+
+    @if (buildQueryForm.get('dataSource')?.invalid && buildQueryForm.get('dataSource')?.touched) {
+      <small class="error-text">Data Source is required</small>
+    }
+  </div>
+</div>
+      <!-- Table Dropdown -->
       <div class="form-group">
-        <label for="dataSource">Data Source ID <span class="required">*</span></label>
-        <input
-          id="dataSource"
-          type="text"
-          formControlName="dataSource"
-          placeholder="Enter data source MongoDB ID"
-          [class.is-invalid]="buildQueryForm.get('dataSource')?.invalid && buildQueryForm.get('dataSource')?.touched"
-        />
-        @if (buildQueryForm.get('dataSource')?.invalid && buildQueryForm.get('dataSource')?.touched) {
-          <small class="error-text">Data Source ID is required</small>
+        <label for="tableId">Select Table <span class="required">*</span></label>
+        @if (loadingTables) {
+        <div class="loading">Loading tables...</div>
+        } @else if (tables.length === 0 && selectedDataSourceId) {
+        <div class="info-message">
+          No tables found. Click the Sync button above to sync your data source
+          to Metabase.
+        </div>
+        } @else {
+        <select
+          id="tableId"
+          formControlName="tableId"
+          [class.is-invalid]="
+            buildQueryForm.get('tableId')?.invalid &&
+            buildQueryForm.get('tableId')?.touched
+          "
+          [disabled]="tables.length === 0"
+        >
+          <option value="">Choose a table...</option>
+          @for (table of tables; track table.id) {
+          <option [value]="table.id">
+            {{ table.displayName }} ({{ table.name }})
+          </option>
+          }
+        </select>
+        }
+        @if (
+          buildQueryForm.get('tableId')?.invalid &&
+          buildQueryForm.get('tableId')?.touched
+        ) {
+        <small class="error-text">Table is required</small>
         }
       </div>
 
+      <!-- Query Type -->
       <div class="form-group">
         <label for="type">Query Type <span class="required">*</span></label>
         <select
           id="type"
           formControlName="type"
-          [class.is-invalid]="buildQueryForm.get('type')?.invalid && buildQueryForm.get('type')?.touched"
+          [class.is-invalid]="
+            buildQueryForm.get('type')?.invalid &&
+            buildQueryForm.get('type')?.touched
+          "
         >
           <option value="builder">Builder</option>
           <option value="native">Native SQL</option>
           <option value="ai">AI Generated</option>
         </select>
-        @if (buildQueryForm.get('type')?.invalid && buildQueryForm.get('type')?.touched) {
-          <small class="error-text">Query Type is required</small>
-        }
       </div>
 
+      <!-- Aggregation -->
       <div class="form-group">
-        <label for="queryDefinition">Query Definition (JSON) <span class="required">*</span></label>
-        <textarea
-          id="queryDefinition"
-          formControlName="queryDefinition"
-          placeholder='{"source-table": 1}'
-          rows="6"
-          [class.is-invalid]="buildQueryForm.get('queryDefinition')?.invalid && buildQueryForm.get('queryDefinition')?.touched"
-        ></textarea>
-        @if (buildQueryForm.get('queryDefinition')?.invalid && buildQueryForm.get('queryDefinition')?.touched) {
-          <small class="error-text">Query Definition is required (must be valid JSON)</small>
-        }
+        <label for="aggregation">Aggregation</label>
+        <select id="aggregation" formControlName="aggregation">
+          <option value="none">None</option>
+          <option value="count">Count</option>
+          <option value="sum">Sum</option>
+          <option value="avg">Average</option>
+        </select>
       </div>
 
+      <!-- User ID -->
       <div class="form-group">
         <label for="userId">User ID (Creator) <span class="required">*</span></label>
         <input
@@ -94,51 +170,75 @@
           type="text"
           formControlName="userId"
           placeholder="Enter user MongoDB ID"
-          [class.is-invalid]="buildQueryForm.get('userId')?.invalid && buildQueryForm.get('userId')?.touched"
+          [class.is-invalid]="
+            buildQueryForm.get('userId')?.invalid &&
+            buildQueryForm.get('userId')?.touched
+          "
         />
-        @if (buildQueryForm.get('userId')?.invalid && buildQueryForm.get('userId')?.touched) {
-          <small class="error-text">User ID is required</small>
+        @if (
+          buildQueryForm.get('userId')?.invalid &&
+          buildQueryForm.get('userId')?.touched
+        ) {
+        <small class="error-text">User ID is required</small>
         }
       </div>
 
+      <!-- JSON Preview -->
+      @if (getQueryDefinitionDisplay()) {
+      <div class="json-preview">
+        <button
+          type="button"
+          (click)="toggleJsonPreview()"
+          class="toggle-json"
+        >
+          {{ showJsonPreview ? 'Hide' : 'Show' }} View Generated Query JSON
+        </button>
+        @if (showJsonPreview) {
+        <pre class="json-content">{{ getQueryDefinitionDisplay() }}</pre>
+        }
+      </div>
+      }
+
+      <!-- Form Actions -->
       <div class="form-actions">
         <button type="button" class="btn-reset" (click)="onReset()">
           Reset
         </button>
         <button
-          type="submit"
+          type="button"
           class="btn-create"
+          (click)="createQuery()"
           [disabled]="buildQueryForm.invalid || loading"
         >
           @if (loading) {
-            <span class="spinner"></span>
-          }
-          {{ loading ? 'Creating...' : 'Create Query' }}
+          <span class="spinner"></span>
+          } {{ loading ? 'Creating...' : 'Create Query' }}
         </button>
       </div>
 
+      <!-- Success Message -->
       @if (isCreated && createdQuery) {
-        <div class="query-info">
-          <h3>Query Created Successfully!</h3>
-          <div class="info-item">
-            <strong>Query ID:</strong>
-            <code>{{ createdQuery._id }}</code>
-          </div>
-          <div class="info-item">
-            <strong>Title:</strong>
-            <span>{{ createdQuery.title }}</span>
-          </div>
-          @if (createdQuery.metabaseCardId) {
-            <div class="info-item">
-              <strong>Metabase Card ID:</strong>
-              <code>{{ createdQuery.metabaseCardId }}</code>
-            </div>
-          }
-          <div class="info-item">
-            <strong>Created At:</strong>
-            <span>{{ createdQuery.createdAt | date: 'medium' }}</span>
-          </div>
+      <div class="query-info">
+        <h3>Query Created Successfully!</h3>
+        <div class="info-item">
+          <strong>Query ID:</strong>
+          <code>{{ createdQuery._id }}</code>
         </div>
+        <div class="info-item">
+          <strong>Title:</strong>
+          <span>{{ createdQuery.title }}</span>
+        </div>
+        @if (createdQuery.metabaseCardId) {
+        <div class="info-item">
+          <strong>Metabase Card ID:</strong>
+          <code>{{ createdQuery.metabaseCardId }}</code>
+        </div>
+        }
+        <div class="info-item">
+          <strong>Created At:</strong>
+          <span>{{ createdQuery.createdAt | date: 'medium' }}</span>
+        </div>
+      </div>
       }
     </form>
   </div>
