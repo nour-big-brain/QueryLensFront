@@ -2,62 +2,64 @@
   <p>Loading dashboard...</p>
 </div>
 
-<div *ngIf="!isLoading && dashboardData" class="dashboard-full-layout" [class.sidebar-hidden]="!showCommentsSidebar">
-  <!-- LEFT SIDE: Dashboard with Charts -->
+<div *ngIf="!isLoading && dashboardData" class="dashboard-full-layout">
   <div class="dashboard-main">
     <div class="dashboard-header">
       <div class="header-top">
-        <div>
+        <div class="header-info">
           <h2>{{ dashboardData.name }}</h2>
           <p>{{ dashboardData.description }}</p>
-          <small>Owner: {{ dashboardData.ownerName }} | Last updated: {{ dashboardData.updatedAt | date:'short' }}</small>
+          <small>Owner: {{ dashboardData.ownerName }} | {{ dashboardData.updatedAt | date:'short' }}</small>
+          <div class="permission-badge permission-{{ permission }}">{{ getPermissionBadge() }}</div>
         </div>
-        <button class="toggle-sidebar-btn" (click)="toggleCommentsSidebar()" title="Toggle comments">
-          {{ showCommentsSidebar ? '✕ Hide' : '💬 Show' }}
-        </button>
+        <div class="header-buttons">
+          <button class="share-btn" (click)="openShareModal()" [disabled]="!canShare()">Share</button>
+          <button class="toggle-sidebar-btn" (click)="toggleCommentsSidebar()">
+            {{ showCommentsSidebar ? 'Hide' : 'Show' }} 💬
+          </button>
+        </div>
       </div>
     </div>
 
-    <ng-container *ngIf="charts && charts.length > 0; else noCharts">
-      <gridster [options]="options" class="gridster-wrapper">
-        <gridster-item *ngFor="let chart of charts; let i = index" [item]="{x: (i % 2) * 6, y: Math.floor(i / 2) * 4, cols: 6, rows: 4}">
-          <div class="chart-container">
-            <h3>{{ chart.title }}</h3>
-            <p *ngIf="chart.description" class="chart-description">{{ chart.description }}</p>
-           
-            <ng-container [ngSwitch]="chart.type">
-              <app-area-chart *ngSwitchCase="'area'" [payload]="chart"></app-area-chart>
-              <app-bar-chart *ngSwitchCase="'bar'" [payload]="chart"></app-bar-chart>
-              <app-line-chart *ngSwitchCase="'line'" [payload]="chart"></app-line-chart>
-              <app-pie-chart *ngSwitchCase="'pie'" [payload]="chart"></app-pie-chart>
-              <app-donut-chart *ngSwitchCase="'donut'" [payload]="chart"></app-donut-chart>
-              <app-radar-chart *ngSwitchCase="'radar'" [payload]="chart"></app-radar-chart>
-              <app-heatmap-chart *ngSwitchCase="'heatmap'" [payload]="chart"></app-heatmap-chart>
-              <app-scatter-chart *ngSwitchCase="'scatter'" [payload]="chart"></app-scatter-chart>
-              <app-mixed-chart *ngSwitchCase="'mixed'" [payload]="chart"></app-mixed-chart>
-              <div *ngSwitchDefault class="unknown-chart">
-                <p>Unknown chart type: {{ chart.type }}</p>
-              </div>
-            </ng-container>
+    <ng-container *ngIf="chartData.length; else noCharts">
+      <gridster [options]="options" class="gridster-wrapper" (itemChange)="onItemChange()">
+        <gridster-item *ngFor="let data of chartData" [item]="data.item">
+          <div class="chart-container" [class.drag-handle]="canEdit()">
+            <div class="chart-header">
+              <h3>{{ data.chart.title }}</h3>
+              <span class="resize-handle" *ngIf="canEdit()">⤡</span>
+            </div>
+            <p class="chart-description" *ngIf="data.chart.description">{{ data.chart.description }}</p>
+            <div class="chart-content">
+              <ng-container [ngSwitch]="data.chart.type">
+                <app-area-chart *ngSwitchCase="'area'" [payload]="data.chart"></app-area-chart>
+                <app-bar-chart *ngSwitchCase="'bar'" [payload]="data.chart"></app-bar-chart>
+                <app-line-chart *ngSwitchCase="'line'" [payload]="data.chart"></app-line-chart>
+                <app-pie-chart *ngSwitchCase="'pie'" [payload]="data.chart"></app-pie-chart>
+                <app-donut-chart *ngSwitchCase="'donut'" [payload]="data.chart"></app-donut-chart>
+                <app-radar-chart *ngSwitchCase="'radar'" [payload]="data.chart"></app-radar-chart>
+                <app-heatmap-chart *ngSwitchCase="'heatmap'" [payload]="data.chart"></app-heatmap-chart>
+                <app-scatter-chart *ngSwitchCase="'scatter'" [payload]="data.chart"></app-scatter-chart>
+                <app-mixed-chart *ngSwitchCase="'mixed'" [payload]="data.chart"></app-mixed-chart>
+                <div *ngSwitchDefault>Unknown chart type: {{ data.chart.type }}</div>
+              </ng-container>
+            </div>
           </div>
         </gridster-item>
       </gridster>
     </ng-container>
+
     <ng-template #noCharts>
-      <div class="no-charts-container">
-        <p>No charts are in this dashboard.</p>
-      </div>
+      <div class="no-charts-container"><p>No charts in this dashboard yet.</p></div>
     </ng-template>
   </div>
 
-  <!-- RIGHT SIDE: Comments Section (Like Live Chat) -->
+  <!-- Comments Sidebar -->
   <div class="comments-sidebar" *ngIf="showCommentsSidebar">
-    <!-- Comments Header -->
     <div class="comments-header">
       <h3>💬 Comments ({{ comments.length }})</h3>
     </div>
 
-    <!-- Comments List -->
     <div class="comments-scroll">
       <div *ngIf="!commentsLoading && comments && comments.length > 0; else noComments">
         <div *ngFor="let comment of comments" class="comment-message">
@@ -67,10 +69,9 @@
               <strong>{{ comment.username }}</strong>
               <span class="comment-time">{{ comment.createdAt | date:'short' }}</span>
               <button 
-                *ngIf="comment.userId === currentUserId && comment._id" 
+                *ngIf="comment.userId === currentUserId" 
                 class="btn-delete-comment" 
                 (click)="deleteComment(comment._id)"
-                title="Delete comment"
               >
                 ✕
               </button>
@@ -81,13 +82,12 @@
       </div>
       <ng-template #noComments>
         <div class="no-comments-yet">
-          <p *ngIf="!commentsLoading">No comments yet. Be the first to comment!</p>
-          <p *ngIf="commentsLoading">Loading comments...</p>
+          <p *ngIf="!commentsLoading">No comments yet. Be the first!</p>
+          <p *ngIf="commentsLoading">Loading...</p>
         </div>
       </ng-template>
     </div>
 
-    <!-- Comment Input -->
     <div class="comment-input-section">
       <label class="input-label">Add a comment</label>
       <div class="input-group">
@@ -98,13 +98,51 @@
           class="comment-input"
           (keyup.enter)="addComment()"
         />
-        <button 
-          class="btn-send" 
-          (click)="addComment()"
-          [disabled]="!newComment.trim()"
-        >
-          Send
-        </button>
+        <button class="btn-send" (click)="addComment()" [disabled]="!newComment.trim()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Share Modal -->
+  <div class="modal-overlay" *ngIf="showShareModal" (click)="closeShareModal()">
+    <div class="share-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Share Dashboard</h3>
+        <button class="close-btn" (click)="closeShareModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p>Share "<strong>{{ dashboardData.name }}</strong>" with another user:</p>
+
+        <div class="form-group">
+          <label>Username or User ID</label>
+          <input 
+            type="text" 
+            [(ngModel)]="targetUsernameOrId" 
+            placeholder="e.g. john_doe or 6910cda02f1185a181e3e542"
+            class="share-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Permission Level</label>
+          <select [(ngModel)]="sharePermission">
+            <option value="view">View only</option>
+            <option value="edit">Can edit</option>
+            <option value="admin">Full access</option>
+          </select>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-cancel" (click)="closeShareModal()">Cancel</button>
+          <button class="btn-share" (click)="confirmShare()" [disabled]="!targetUsernameOrId.trim()">
+            Share Dashboard
+          </button>
+        </div>
+
+        <div *ngIf="shareMessage" class="share-status" [ngClass]="shareSuccess ? 'success' : 'error'">
+          {{ shareMessage }}
+        </div>
       </div>
     </div>
   </div>

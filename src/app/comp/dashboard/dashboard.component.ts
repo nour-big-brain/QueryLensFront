@@ -1,4 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, NgZone } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+import { GridsterConfig, GridsterItem, GridsterModule } from 'angular-gridster2';
+
 import { BarChartComponent } from '../../charts/bar-chart/bar-chart.component';
 import { LineChartComponent } from '../../charts/line-chart/line-chart.component';
 import { AreaChartComponent } from '../../charts/area-chart/area-chart.component';
@@ -8,13 +13,12 @@ import { RadarChartComponent } from '../../charts/radar-chart/radar-chart.compon
 import { HeatmapChartComponent } from '../../charts/heatmap-chart/heatmap-chart.component';
 import { ScatterChartComponent } from '../../charts/scatter-chart/scatter-chart.component';
 import { MixedChartComponent } from '../../charts/mixed-chart/mixed-chart.component';
+
 import { ChartPayload } from '../../models/chartPayload';
-import { GridsterModule, GridsterConfig } from 'angular-gridster2';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Dashboard } from '../../models/dashboard';
-import { ActivatedRoute, Router } from '@angular/router';
 import { DashboardService } from '../../services/dashboard.service';
+import { ChartService } from '../../services/chart.service';
+import { QueryService } from '../../services/query.service';
 
 interface Comment {
   _id?: string;
@@ -24,10 +28,18 @@ interface Comment {
   createdAt: string | number | Date;
 }
 
+interface DashboardChart {
+  chart: ChartPayload;
+  item: GridsterItem;
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [
+    CommonModule,
+    FormsModule,
+    GridsterModule,
     BarChartComponent,
     LineChartComponent,
     AreaChartComponent,
@@ -36,248 +48,271 @@ interface Comment {
     RadarChartComponent,
     HeatmapChartComponent,
     ScatterChartComponent,
-    MixedChartComponent,
-    GridsterModule,
-    CommonModule,
-    FormsModule
+    MixedChartComponent
   ],
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.css']
+  styleUrls: ['./dashboard.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DashboardComponent implements OnInit {
   options!: GridsterConfig;
   dashboardData: Dashboard | null = null;
-  charts: ChartPayload[] = [];
+  chartData: DashboardChart[] = [];
   isLoading = true;
-  Math = Math;
 
-  // Comments
+  permission: 'view' | 'edit' | 'admin' | 'owner' = 'view';
+
+  showShareModal = false;
+  targetUsernameOrId = '';
+  sharePermission: 'view' | 'edit' | 'admin' = 'view';
+  shareMessage = '';
+  shareSuccess = false;
+
   comments: Comment[] = [];
-  newComment: string = '';
-  currentUserId: string = '';
-  currentUsername: string = '';
-  showCommentsSidebar: boolean = true;
-  commentsLoading: boolean = false;
+  newComment = '';
+  currentUserId = '';
+  currentUsername = '';
+  showCommentsSidebar = true;
+  commentsLoading = false;
 
   constructor(
-    private route: ActivatedRoute, 
+    private route: ActivatedRoute,
     private dashboardService: DashboardService,
-    private router:Router
+    private chartService: ChartService,
+    private queryService: QueryService,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit() {
+    this.initializeUser();
+
+    const navigation = window.history.state;
+    if (navigation?.dashboard) {
+      this.dashboardData = navigation.dashboard;
+      this.permission = navigation.permission || 'view';
+      this.initializeGridster();
+      this.loadChartsFromQueries();
+      this.loadComments();
+    } else {
+      const id = this.route.snapshot.paramMap.get('id');
+      if (id) this.loadDashboard(id);
+      else this.isLoading = false;
+    }
+    this.cdr.markForCheck();
+  }
+
+  private initializeGridster() {
+    const canEdit = this.canEdit();
     this.options = {
-      gridType: 'scrollVertical',
-      draggable: { enabled: true },
-      resizable: { enabled: true },
+      gridType: 'verticalFixed',
+      compactType: 'compactUp&Left',
+      margin: 12,
+      outerMargin: true,
+      outerMarginTop: 15,
+      outerMarginRight: 15,
+      outerMarginBottom: 15,
+      outerMarginLeft: 15,
+      useTransformOnContainer: true,
+      mobileBreakpoint: 640,
       minCols: 12,
       maxCols: 12,
       minRows: 1,
       maxRows: 100,
       fixedColWidth: 100,
-      fixedRowHeight: 100
+      fixedRowHeight: 100,
+      pushItems: true,
+      swap: false,
+      draggable: {
+        enabled: canEdit,
+        ignoreContent: false,
+        delayStart: 0
+      },
+      resizable: {
+        enabled: canEdit,
+        handles: {
+          s: true,
+          e: true,
+          n: false,
+          w: false,
+          se: true,
+          ne: false,
+          sw: false,
+          nw: false
+        }
+      },
+      displayGrid: 'onDrag&Resize',
+      disableScrollHorizontal: true,
+      disableScrollVertical: false,
+      disableWarnings: false,
+      enableEmptyCellClick: false,
+      enableOccupiedCellClick: false,
+      emptyCellClickToRemove: false,
+      keepFixedHeightInMobile: false,
+      ignoreMarginInRow: false,
+      ignoreRenderingSubcomponents: false,
+      stopUsingGridGap: false,
+      itemChangeCallback: () => this.onItemChange()
     };
-
-    // Initialize user FIRST
-    this.initializeUser();
-
-    const navigation = window.history.state;
-    console.log('Navigation state:', navigation);
-if (navigation && navigation.dashboard) {
-      this.dashboardData = navigation.dashboard as Dashboard;
-      this.charts = this.dashboardData.cards && this.dashboardData.cards.length > 0 
-        ? this.dashboardData.cards 
-        : this.getMockCharts();
-      this.isLoading = false;
-      setTimeout(() => this.loadComments(), 100);
-    }  else {
-      const dashboardId = this.route.snapshot.paramMap.get('id');
-      console.log('Dashboard ID from route:', dashboardId);
-      
-      if (dashboardId) {
-        this.loadDashboard(dashboardId);
-      } else {
-        console.error('No dashboard ID provided in route or state.');
-        this.isLoading = false;
-      }
-    }
   }
 
-loadDashboard(id: string) {
+  loadDashboard(id: string) {
     this.dashboardService.getDashboardById(id, this.currentUserId).subscribe({
-      next: (data: Dashboard) => {
+      next: (data) => {
         this.dashboardData = data;
-        
-        // Use cards from backend, or show mock data if empty
-        this.charts = data.cards && data.cards.length > 0 ? data.cards : this.getMockCharts();
-        
-        console.log('Charts loaded:', this.charts);
-        this.isLoading = false;
+        this.permission = data.ownerId === this.currentUserId ? 'owner' : 'view';
+        this.initializeGridster();
+        this.loadChartsFromQueries();
         this.loadComments();
-      },
-      error: (err) => {
-        console.error('Failed to load dashboard:', err);
         this.isLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.isLoading = false;
+        this.cdr.markForCheck();
       }
     });
   }
 
-  private getMockCharts(): ChartPayload[] {
-    return [
-      {
-        title: 'Sales by Region',
-        description: 'Monthly sales performance across regions',
-        type: 'bar',
-        categories: ['North', 'South', 'East', 'West'],
-        series: [
-          {
-            name: 'Sales',
-            values: [4000, 3000, 2000, 2780]
-          }
-        ]
-      },
-      {
-        title: 'Revenue Trend',
-        description: 'Revenue growth over months',
-        type: 'line',
-        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-        series: [
-          {
-            name: 'Revenue',
-            values: [4000, 3000, 2000, 2780, 1890]
-          }
-        ]
-      },
-      {
-        title: 'Market Share',
-        description: 'Product distribution across markets',
-        type: 'pie',
-        labels: ['Product A', 'Product B', 'Product C', 'Product D'],
-        series: [
-          {
-            name: 'Share',
-            values: [30, 25, 20, 25]
-          }
-        ]
-      },
-      {
-        title: 'Performance Metrics',
-        description: 'Key performance indicators',
-        type: 'radar',
-        labels: ['Quality', 'Delivery', 'Cost', 'Safety'],
-        series: [
-          {
-            name: 'Performance',
-            values: [85, 90, 75, 88]
-          }
-        ]
-      }
-    ];
+  canEdit(): boolean {
+    return ['owner', 'admin', 'edit'].includes(this.permission);
   }
-  loadComments() {
-    const dashboardId = this.dashboardData?._id || this.route.snapshot.paramMap.get('id');
-    if (!dashboardId) {
-      console.error('No dashboard ID found');
-      return;
-    }
 
-    console.log('Loading comments for dashboard:', dashboardId);
-    console.log('With user ID:', this.currentUserId);
+  canShare(): boolean {
+    return ['owner', 'admin'].includes(this.permission);
+  }
 
-    this.commentsLoading = true;
-    this.dashboardService.getComments(dashboardId, this.currentUserId).subscribe({
-      next: (data: any) => {
-        console.log('Comments received:', data);
-        // Convert createdAt to Date if it's a string
-        const processedComments = data.map((comment: any) => ({
-          ...comment,
-          createdAt: new Date(comment.createdAt)
-        }));
-        
-        // Sort comments by newest first
-        this.comments = processedComments.sort((a: Comment, b: Comment) => 
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  loadChartsFromQueries() {
+    if (!this.dashboardData?._id) return;
+
+    this.queryService.getQueriesByDashboardId(this.dashboardData._id).subscribe({
+      next: (queries) => {
+        if (!queries?.length) {
+          this.chartData = [];
+          this.isLoading = false;
+          this.cdr.markForCheck();
+          return;
+        }
+
+        const promises = queries.map((q, i) =>
+          this.chartService.getChartData(q._id!, q.chartType)
+            .toPromise()
+            .then(payload => payload ? {
+              chart: { ...payload, title: q.title || 'Untitled', description: q.description || '' } as ChartPayload,
+              item: { x: (i % 2) * 6, y: Math.floor(i / 2) * 6, cols: 6, rows: 6 }
+            } : null)
         );
+
+        Promise.all(promises).then(results => {
+          this.chartData = results.filter(Boolean) as DashboardChart[];
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        });
+      }
+    });
+  }
+
+  loadComments() {
+    if (!this.dashboardData?._id) return;
+    this.commentsLoading = true;
+    this.dashboardService.getComments(this.dashboardData._id, this.currentUserId).subscribe({
+      next: (comments: any[]) => {
+        this.comments = comments
+          .map(c => ({ ...c, createdAt: new Date(c.createdAt) }))
+          .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
         this.commentsLoading = false;
-      },
-      error: (err) => {
-        console.error('Failed to load comments:', err);
-        this.comments = [];
-        this.commentsLoading = false;
+        this.cdr.markForCheck();
       }
     });
   }
 
   addComment() {
-    if (!this.newComment.trim()) return;
-
-    const dashboardId = this.dashboardData?._id || this.route.snapshot.paramMap.get('id');
-    if (!dashboardId) return;
-
-    this.dashboardService.addComment(dashboardId, this.newComment.trim(), this.currentUserId).subscribe({
-      next: (response: any) => {
-        // Create new comment object to add locally
-        const newComment: Comment = {
-          _id: response.comment?._id || Date.now().toString(),
+    if (!this.newComment.trim() || !this.dashboardData?._id) return;
+    this.dashboardService.addComment(this.dashboardData._id, this.newComment.trim(), this.currentUserId).subscribe({
+      next: () => {
+        this.comments.unshift({
           userId: this.currentUserId,
           username: this.currentUsername,
           text: this.newComment.trim(),
           createdAt: new Date()
-        };
-
-        this.comments.unshift(newComment);
+        });
         this.newComment = '';
-      },
-      error: (err) => {
-        console.error('Failed to add comment:', err);
-        alert('Failed to add comment. Please try again.');
+        this.cdr.markForCheck();
       }
     });
   }
 
   deleteComment(commentId?: string) {
-    if (!commentId) return;
-    
-    const dashboardId = this.dashboardData?._id || this.route.snapshot.paramMap.get('id');
+    if (!commentId || !confirm('Delete this comment?')) return;
+    const dashboardId = this.dashboardData?._id;
     if (!dashboardId) return;
-
-    if (!confirm('Are you sure you want to delete this comment?')) return;
 
     this.dashboardService.deleteComment(dashboardId, commentId, this.currentUserId).subscribe({
       next: () => {
         this.comments = this.comments.filter(c => c._id !== commentId);
-      },
-      error: (err) => {
-        console.error('Failed to delete comment:', err);
-        alert('Failed to delete comment. You may only delete your own comments.');
+        this.cdr.markForCheck();
       }
     });
   }
 
   toggleCommentsSidebar() {
     this.showCommentsSidebar = !this.showCommentsSidebar;
+    this.cdr.markForCheck();
   }
 
   private initializeUser() {
-    // Check if user ID exists in session storage
-    let userId = sessionStorage.getItem('tempUserId');
-    let username = sessionStorage.getItem('tempUsername');
-    
-    // Validate that userId is a valid MongoDB ObjectId (24 hex characters)
-    if (!userId || !this.isValidObjectId(userId)) {
-      // Generate a valid temporary user ID
-      userId = "6910cda02f1185a181e3e542";
-      username = 'User ' + userId.substring(0, 8);
-      
-      sessionStorage.setItem('tempUserId', userId);
-      sessionStorage.setItem('tempUsername', username);
-    }
-    
+    let userId = sessionStorage.getItem('tempUserId') || '6910cda02f1185a181e3e542';
+    let username = sessionStorage.getItem('tempUsername') || 'nourr';
     this.currentUserId = userId;
-    this.currentUsername = username || 'Anonymous User';
+    this.currentUsername = username;
   }
 
-  private isValidObjectId(id: string): boolean {
-    return /^[0-9a-f]{24}$/i.test(id);
+  openShareModal() {
+    if (!this.canShare()) return alert('You do not have permission to share');
+    this.showShareModal = true;
+    this.targetUsernameOrId = '';
+    this.sharePermission = 'view';
+    this.cdr.markForCheck();
+  }
+
+  closeShareModal() {
+    this.showShareModal = false;
+    this.cdr.markForCheck();
+  }
+
+  confirmShare() {
+    if (!this.dashboardData?._id) return;
+    this.dashboardService.shareDashboard(
+      this.dashboardData._id,
+      this.targetUsernameOrId.trim(),
+      this.targetUsernameOrId.trim(),
+      this.sharePermission,
+      this.currentUserId
+    ).subscribe({
+      next: () => {
+        this.shareMessage = 'Shared successfully!';
+        this.shareSuccess = true;
+        this.cdr.markForCheck();
+        setTimeout(() => this.closeShareModal(), 2000);
+      },
+      error: (err) => {
+        this.shareMessage = err.message || 'Failed to share';
+        this.shareSuccess = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  getPermissionBadge(): string {
+    return { owner: 'Owner', admin: 'Admin', edit: 'Can Edit', view: 'View Only' }[this.permission] || 'View Only';
+  }
+
+  onItemChange() {
+    // Trigger chart resize when gridster items change
+    this.ngZone.runOutsideAngular(() => {
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+      }, 100);
+    });
   }
 }

@@ -54,50 +54,53 @@
         <small class="error-text">Description is required</small>
         }
       </div>
-<!-- Data Source Dropdown with Sync Button -->
-<div class="form-group">
-  <label for="dataSource">Data Source <span class="required">*</span></label>
-  <div class="datasource-container">
-    @if (loadingDataSources) {
-      <div class="loading">Loading data sources...</div>
-    } @else {
-      <select
-        id="dataSource"
-        formControlName="dataSource"
-        (change)="onDataSourceChange($any($event.target).value)"
-        [class.is-invalid]="buildQueryForm.get('dataSource')?.invalid && buildQueryForm.get('dataSource')?.touched">
-        <option value="">Select a data source...</option>
-        @for (ds of dataSources; track ds._id) {
-          <option [value]="ds._id">
-            {{ ds.name }} (Metabase ID: {{ ds.metabaseDbId || 'Not synced' }})
-          </option>
-        }
-      </select>
 
-      @if (selectedDataSourceId) {
-        <button
-          type="button"
-          class="btn-sync"
-          (click)="syncDataSource(selectedDataSourceId)"
-          [disabled]="getSyncStatus(selectedDataSourceId) === 'syncing'">
-          <!-- spinner while syncing -->
-          @if (getSyncStatus(selectedDataSourceId) === 'syncing') {
+      <!-- Data Source Dropdown with Sync Button -->
+      <div class="form-group">
+        <label for="dataSource">Data Source <span class="required">*</span></label>
+        <div class="datasource-container">
+          @if (loadingDataSources) {
+          <div class="loading">Loading data sources...</div>
+          } @else {
+          <select
+            id="dataSource"
+            formControlName="dataSource"
+            (change)="onDataSourceChange($any($event.target).value)"
+            [class.is-invalid]="buildQueryForm.get('dataSource')?.invalid && buildQueryForm.get('dataSource')?.touched"
+          >
+            <option value="">Select a data source...</option>
+            @for (ds of dataSources; track ds._id) {
+            <option [value]="ds._id">
+              {{ ds.name }} (Metabase ID: {{ ds.metabaseDbId || 'Not synced' }})
+            </option>
+            }
+          </select>
+
+          @if (selectedDataSourceId) {
+          <button
+            type="button"
+            class="btn-sync"
+            (click)="syncDataSource(selectedDataSourceId)"
+            [disabled]="getSyncStatus(selectedDataSourceId) === 'syncing'"
+          >
+            @if (getSyncStatus(selectedDataSourceId) === 'syncing') {
             <span class="spinner"></span>
             Syncing...
-          } @else if (getSyncStatus(selectedDataSourceId) === 'synced') {
-            <span class="synced-check">Synced</span>
-          } @else {
+            } @else if (getSyncStatus(selectedDataSourceId) === 'synced') {
+            <span class="synced-check">✓ Synced</span>
+            } @else {
             Sync
+            }
+          </button>
           }
-        </button>
-      }
-    }
+          }
 
-    @if (buildQueryForm.get('dataSource')?.invalid && buildQueryForm.get('dataSource')?.touched) {
-      <small class="error-text">Data Source is required</small>
-    }
-  </div>
-</div>
+          @if (buildQueryForm.get('dataSource')?.invalid && buildQueryForm.get('dataSource')?.touched) {
+          <small class="error-text">Data Source is required</small>
+          }
+        </div>
+      </div>
+
       <!-- Table Dropdown -->
       <div class="form-group">
         <label for="tableId">Select Table <span class="required">*</span></label>
@@ -148,8 +151,39 @@
           <option value="builder">Builder</option>
           <option value="native">Native SQL</option>
           <option value="ai">AI Generated</option>
+          
         </select>
       </div>
+      
+<!-- Chart Type Selection (NEW) -->
+<div class="form-group">
+  <label for="chartType">Chart Type <span class="required">*</span></label>
+  <select
+    id="chartType"
+    formControlName="chartType"
+    [class.is-invalid]="
+      buildQueryForm.get('chartType')?.invalid &&
+      buildQueryForm.get('chartType')?.touched
+    "
+  >
+    <option value="bar">Bar Chart</option>
+    <option value="line">Line Chart</option>
+    <option value="area">Area Chart</option>
+    <option value="pie">Pie Chart</option>
+    <option value="donut">Donut Chart</option>
+    <option value="radar">Radar Chart</option>
+    <option value="heatmap">Heatmap</option>
+    <option value="scatter">Scatter Plot</option>
+    <option value="mixed">Mixed Chart</option>
+  </select>
+  @if (
+    buildQueryForm.get('chartType')?.invalid &&
+    buildQueryForm.get('chartType')?.touched
+  ) {
+  <small class="error-text">Chart Type is required</small>
+  }
+</div>
+
 
       <!-- Aggregation -->
       <div class="form-group">
@@ -212,34 +246,153 @@
         >
           @if (loading) {
           <span class="spinner"></span>
-          } {{ loading ? 'Creating...' : 'Create Query' }}
+          }
+          {{ loading ? 'Creating...' : 'Create Query' }}
         </button>
       </div>
-
-      <!-- Success Message -->
-      @if (isCreated && createdQuery) {
-      <div class="query-info">
-        <h3>Query Created Successfully!</h3>
-        <div class="info-item">
-          <strong>Query ID:</strong>
-          <code>{{ createdQuery._id }}</code>
-        </div>
-        <div class="info-item">
-          <strong>Title:</strong>
-          <span>{{ createdQuery.title }}</span>
-        </div>
-        @if (createdQuery.metabaseCardId) {
-        <div class="info-item">
-          <strong>Metabase Card ID:</strong>
-          <code>{{ createdQuery.metabaseCardId }}</code>
-        </div>
-        }
-        <div class="info-item">
-          <strong>Created At:</strong>
-          <span>{{ createdQuery.createdAt | date: 'medium' }}</span>
-        </div>
-      </div>
-      }
     </form>
   </div>
 </div>
+
+<!-- Modern Dashboard Assignment Modal -->
+@if (showDashboardModal) {
+<div class="modal-overlay" (click)="closeDashboardModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="modal-header">
+      <div>
+        <h3>Add to Dashboard</h3>
+        <p class="modal-subtitle">Assign your query "{{ createdQuery?.title }}" to a dashboard</p>
+      </div>
+      <button class="modal-close" (click)="closeDashboardModal()">✕</button>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body">
+      @if (dashboardError) {
+      <div class="alert alert-error">{{ dashboardError }}</div>
+      }
+
+      @if (loadingDashboards) {
+      <div class="loading-dashboards">
+        <div class="spinner"></div>
+        <p>Loading your dashboards...</p>
+      </div>
+      } @else if (dashboards.length === 0) {
+      <div class="no-dashboards">
+        <p>No dashboards found. Create one first to add this query.</p>
+      </div>
+      } @else {
+      <div class="dashboard-list">
+        @for (dashboard of dashboards; track dashboard._id) {
+        <label class="dashboard-item" [class.selected]="selectedDashboardId === dashboard._id">
+          <input
+            type="radio"
+            name="dashboard"
+            [value]="dashboard._id"
+            (change)="selectedDashboardId = $any($event.target).value"
+          />
+          <div class="dashboard-card">
+            <div class="dashboard-icon">📊</div>
+            <div class="dashboard-info">
+              <h4>{{ dashboard.name }}</h4>
+              @if (dashboard.description) {
+              <p class="dashboard-desc">{{ dashboard.description }}</p>
+              }
+            </div>
+          </div>
+        </label>
+        }
+      </div>
+      }
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <button
+        type="button"
+        class="btn-secondary"
+        (click)="skipDashboardAssignment()"
+      >
+        Skip for Now
+      </button>
+      <button
+        type="button"
+        class="btn-primary"
+        (click)="assignQueryToDashboard()"
+        [disabled]="!selectedDashboardId || assigningToDashboard"
+      >
+        @if (assigningToDashboard) {
+        <span class="spinner"></span>
+        }
+        {{ assigningToDashboard ? 'Adding...' : 'Add to Dashboard' }}
+      </button>
+    </div>
+  </div>
+</div>
+}
+<!-- Success Message with Sync Status -->
+@if (isCreated && createdQuery) {
+<div class="query-info">
+  <div class="query-header">
+    <h3>✅ Query Created Successfully!</h3>
+  </div>
+
+  <div class="info-item">
+    <strong>Query ID:</strong>
+    <code>{{ createdQuery._id }}</code>
+  </div>
+
+  <div class="info-item">
+    <strong>Title:</strong>
+    <span>{{ createdQuery.title }}</span>
+  </div>
+
+  <div class="info-item">
+    <strong>Chart Type:</strong>
+    <span class="badge badge-chart">{{ createdQuery.chartType || 'bar' }}</span>
+  </div>
+
+ @if (isCreated && createdQuery) {
+  <div class="query-created-card">
+    <h3>Query Created Successfully!</h3>
+    <p><strong>{{ createdQuery.title }}</strong></p>
+    
+    @if (createdQuery.metabaseCardId) {
+      <p class="success-text">
+        Synced to Metabase (Card ID: {{ createdQuery.metabaseCardId }})
+      </p>
+    } @else {
+      <p class="warning-text">
+        Not yet synced to Metabase
+      </p>
+      
+      <button 
+        type="button" 
+        class="btn-retry-sync"
+        (click)="retryMetabaseSync(createdQuery._id)"
+        [disabled]="retryingQueryId === createdQuery._id">
+        @if (retryingQueryId === createdQuery._id) {
+          <span class="spinner"></span> Retrying...
+        } @else {
+          Retry Metabase Sync
+        }
+      </button>
+    }
+  </div>
+}
+
+  <div class="info-item">
+    <strong>Created At:</strong>
+    <span>{{ createdQuery.createdAt | date: 'medium' }}</span>
+  </div>
+
+  <div class="info-divider"></div>
+
+  <div class="action-buttons">
+    <button type="button" class="btn-create-another" (click)="onReset()">
+      Create Another Query
+    </button>
+  </div>
+</div>
+}

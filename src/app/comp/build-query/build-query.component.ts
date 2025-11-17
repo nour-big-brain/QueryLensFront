@@ -11,6 +11,8 @@ import {
   DataSource,
   DataSourceService,
 } from '../../services/data-source.service';
+import { DashboardService } from '../../services/dashboard.service';
+import { Dashboard } from '../../models/dashboard';
 
 interface Table {
   id: number;
@@ -18,6 +20,8 @@ interface Table {
   displayName: string;
   description?: string;
 }
+
+
 
 @Component({
   selector: 'app-build-query',
@@ -38,25 +42,37 @@ export class BuildQueryComponent implements OnInit {
   tables: Table[] = [];
   loadingDataSources = false;
   loadingTables = false;
-  syncingDataSource = false;
-  syncingDataSourceId: string | null = null;
   showJsonPreview = false;
+
+  // Dashboard modal state
+  showDashboardModal = false;
+  dashboards: Dashboard[] = [];
+  loadingDashboards = false;
+  selectedDashboardId: string | null = null;
+  assigningToDashboard = false;
+  dashboardError: string | null = null;
+  // Add this line with your other properties
+retryingQueryId: string | null = null;
+  private syncStatus = new Map<string, 'idle' | 'syncing' | 'synced'>();
 
   constructor(
     private fb: FormBuilder,
     private queryService: QueryService,
-    private datasourceService: DataSourceService
+    private datasourceService: DataSourceService,
+    private dashboardService: DashboardService
   ) {
     this.buildQueryForm = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(3)]],
       description: ['', Validators.required],
       dataSource: ['', Validators.required],
       type: ['builder', Validators.required],
+      chartType: ['bar', Validators.required],  // ✅ NEW
       tableId: ['', Validators.required],
       aggregation: ['none'],
       userId: ['', Validators.required],
     });
   }
+
 
   ngOnInit(): void {
     this.fetchDataSources();
@@ -77,42 +93,36 @@ export class BuildQueryComponent implements OnInit {
     });
   }
 
-  // ---- inside BuildQueryComponent class ----
-private syncStatus = new Map<string, 'idle' | 'syncing' | 'synced'>();
+  syncDataSource(datasourceId: string): void {
+    const datasource = this.dataSources.find((ds) => ds._id === datasourceId);
+    if (!datasource) return;
 
-syncDataSource(datasourceId: string): void {
-  const datasource = this.dataSources.find(ds => ds._id === datasourceId);
-  if (!datasource) return;
+    this.syncStatus.set(datasourceId, 'syncing');
+    this.error = null;
 
-  this.syncStatus.set(datasourceId, 'syncing');   // <-- show spinner
-  this.syncingDataSourceId = datasourceId;
-  this.error = null;
+    this.datasourceService
+      .syncDataSourceToMetabase(datasourceId, datasource.connectionCredentials)
+      .subscribe({
+        next: (response) => {
+          this.success = `Data source synced successfully! Found ${response.tablesCount} tables.`;
+          this.syncStatus.set(datasourceId, 'synced');
 
-  this.datasourceService
-    .syncDataSourceToMetabase(datasourceId, datasource.connectionCredentials)
-    .subscribe({
-      next: (response) => {
-        this.success = `Data source synced successfully! Found ${response.tablesCount} tables.`;
-        this.syncStatus.set(datasourceId, 'synced'); // <-- show checkmark
-        this.syncingDataSourceId = null;
+          this.onDataSourceChange(datasourceId);
 
-        // refresh tables
-        this.onDataSourceChange(datasourceId);
+          setTimeout(() => this.syncStatus.set(datasourceId, 'idle'), 2000);
+          setTimeout(() => (this.success = null), 3000);
+        },
+        error: (err) => {
+          this.error =
+            err.error?.error || 'Failed to sync data source to Metabase';
+          this.syncStatus.set(datasourceId, 'idle');
+        },
+      });
+  }
 
-        // clear the checkmark after 2 s
-        setTimeout(() => this.syncStatus.set(datasourceId, 'idle'), 2000);
-        setTimeout(() => (this.success = null), 3000);
-      },
-      error: (err) => {
-        this.error = err.error?.error || 'Failed to sync data source to Metabase';
-        this.syncStatus.set(datasourceId, 'idle');
-        this.syncingDataSourceId = null;
-      },
-    });
-}
-getSyncStatus(id: string): 'idle' | 'syncing' | 'synced' {
-  return this.syncStatus.get(id) ?? 'idle';
-}
+  getSyncStatus(id: string): 'idle' | 'syncing' | 'synced' {
+    return this.syncStatus.get(id) ?? 'idle';
+  }
 
   onDataSourceChange(datasourceId: string): void {
     this.buildQueryForm.patchValue({ tableId: '' });
@@ -147,13 +157,13 @@ getSyncStatus(id: string): 'idle' | 'syncing' | 'synced' {
 
     const aggregation = this.buildQueryForm.get('aggregation')?.value;
     if (aggregation && aggregation !== 'none') {
-      query.aggregation = [['count']]; // Can be extended later
+      query.aggregation = [['count']];
     }
 
     return query;
   }
 
-  createQuery(): void {
+   createQuery(): void {
     if (this.buildQueryForm.invalid) {
       this.buildQueryForm.markAllAsTouched();
       this.error = 'Please fill in all required fields correctly';
@@ -171,6 +181,7 @@ getSyncStatus(id: string): 'idle' | 'syncing' | 'synced' {
       description: formValue.description,
       dataSource: formValue.dataSource,
       type: formValue.type,
+      chartType: formValue.chartType,  // ✅ NEW - Pass chart type
       queryDefinition: this.generateQueryDefinition(),
       userId: formValue.userId,
     };
@@ -182,9 +193,10 @@ getSyncStatus(id: string): 'idle' | 'syncing' | 'synced' {
         this.success = `Query "${response.title}" created successfully!`;
         this.loading = false;
 
+        // Open dashboard modal after successful creation
         setTimeout(() => {
-          this.resetForm();
-        }, 3000);
+          this.openDashboardModal();
+        }, 500);
       },
       error: (error) => {
         this.error =
@@ -193,6 +205,90 @@ getSyncStatus(id: string): 'idle' | 'syncing' | 'synced' {
         console.error('Error creating query:', error);
       },
     });
+  }
+
+  openDashboardModal(): void {
+    this.showDashboardModal = true;
+    this.selectedDashboardId = null;
+    this.dashboardError = null;
+    this.loadingDashboards = true;
+
+    // Use hardcoded user ID for testing
+    const userId = '6910cda02f1185a181e3e542';
+    
+    console.log('Opening dashboard modal with userId:', userId);
+
+    // Use getDashboards instead - it returns all dashboards for a user (owned, shared, public)
+    this.dashboardService.getDashboards(userId).subscribe({
+      next: (dashboards) => {
+        console.log('Fetched dashboards:', dashboards);
+        this.dashboards = dashboards || [];
+        this.loadingDashboards = false;
+        if (this.dashboards.length === 0) {
+          console.warn('No dashboards found for user:', userId);
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching dashboards:', err);
+        this.dashboardError = 'Failed to load dashboards: ' + (err.error?.error || err.message);
+        this.loadingDashboards = false;
+      },
+    });
+  }
+
+  closeDashboardModal(): void {
+    this.showDashboardModal = false;
+    this.selectedDashboardId = null;
+    this.dashboardError = null;
+    this.resetForm();
+  }
+
+  assignQueryToDashboard(): void {
+    if (!this.selectedDashboardId || !this.createdQuery) {
+      this.dashboardError = 'Please select a dashboard';
+      return;
+    }
+
+    this.assigningToDashboard = true;
+    this.dashboardError = null;
+
+    console.log('Assigning query to dashboard:', {
+      queryId: this.createdQuery._id,
+      dashboardId: this.selectedDashboardId
+    });
+
+    // Use QueryService's assignQueryToDashboard method
+    this.queryService
+      .assignQueryToDashboard(this.createdQuery._id, this.selectedDashboardId)
+      .subscribe({
+        next: (response) => {
+          console.log('Query assigned successfully:', response);
+          this.success = `Query added to dashboard "${this.getDashboardName(
+            this.selectedDashboardId!
+          )}" successfully!`;
+          this.assigningToDashboard = false;
+
+          setTimeout(() => {
+            this.closeDashboardModal();
+          }, 2000);
+        },
+        error: (err) => {
+          console.error('Error assigning query to dashboard:', err);
+          this.dashboardError =
+            err.error?.error || 'Failed to add query to dashboard';
+          this.assigningToDashboard = false;
+        },
+      });
+  }
+
+  getDashboardName(dashboardId: string): string {
+    return (
+      this.dashboards.find((d) => d._id === dashboardId)?.name || 'Dashboard'
+    );
+  }
+
+  skipDashboardAssignment(): void {
+    this.closeDashboardModal();
   }
 
   resetForm(): void {
@@ -221,14 +317,37 @@ getSyncStatus(id: string): 'idle' | 'syncing' | 'synced' {
     return queryDef ? JSON.stringify(queryDef, null, 2) : '';
   }
 
-  // Helper to get selected data source safely
-  getSelectedDataSource(): DataSource | undefined {
-    const id = this.buildQueryForm.get('dataSource')?.value;
-    return this.dataSources.find((ds) => ds._id === id);
-  }
-
-  // Reactive getter for template
   get selectedDataSourceId(): string | null {
     return this.buildQueryForm.get('dataSource')?.value || null;
   }
+  retryMetabaseSync(queryId: string): void {
+  // Prevent double-clicks
+  if (this.retryingQueryId === queryId) return;
+
+  this.retryingQueryId = queryId;
+  this.error = null;
+  this.success = null;
+
+  this.queryService.retryQuerySync(queryId).subscribe({
+    next: (response) => {
+      console.log('Query sync retried successfully:', response);
+      this.success = `Sync retried successfully! Query will appear in Metabase shortly.`;
+
+      // Update the createdQuery if it's the same one
+      if (this.createdQuery?._id === queryId) {
+        this.createdQuery.metabaseCardId = response.metabaseCardId;
+      }
+
+      this.retryingQueryId = null;
+
+      setTimeout(() => this.success = null, 5000);
+    },
+    error: (err) => {
+      console.error('Failed to retry sync:', err);
+      this.error = err.error?.error || 'Failed to retry sync. Please try again later.';
+      this.retryingQueryId = null;
+    }
+  });
+}
+   
 }

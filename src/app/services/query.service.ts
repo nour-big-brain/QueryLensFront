@@ -17,6 +17,7 @@ export interface Query {
   metabaseCardId?: number;
   createdAt?: Date;
   updatedAt?: Date;
+  chartType?: string;
   dashboard?: string; // ObjectId reference
 }
 
@@ -28,6 +29,7 @@ export interface BuildQueryRequest {
   dataSource: string;
   type: 'builder' | 'native' | 'ai';
   queryDefinition: any;
+  chartType: string;  // ✅ NEW
   userId: string;  // ✅ Changed from createdBy to userId
 }
 
@@ -51,13 +53,19 @@ export class QueryService {
 
 
   assignQueryToDashboard(queryId: string, dashboardId: string): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/assign`, {
+    return this.http.post<any>(`${this.apiUrl}/queries/assign`, {
       queryId,
       dashboardId
     });
   }
+  retryQuerySync(queryId: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/queries/retry-sync`, { queryId });
+  }
 
   getQueryById(id: string): Observable<Query> {
     return this.http.get<Query>(`${this.apiUrl}/${id}`);
+  }
+  getQueriesByDashboardId(dashboardId: string): Observable<Query[]> {
+    return this.http.get<Query[]>(`${this.apiUrl}/queries/by-dashboard/${dashboardId}`);
   }
 }
