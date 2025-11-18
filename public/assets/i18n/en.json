@@ -1,10 +1,11 @@
 {
-    "NAV": {
-        "HOME": "Home",
-        "DASHBOARD": "Dashboard",
-        "LIST_DASHBOARD": "List Dashboard",
-        "CREATE_DASHBOARD": "Create Dashboard"
-    },
+     "NAV": {
+    "HOME": "Home",
+    "LIST_DASHBOARD": "My Dashboards",
+    "CREATE_DASHBOARD": "Create Dashboard",
+    "LOGIN": "Login",
+    "LOGOUT": "Logout"
+  },
     "THEME": {
         "LIGHT": "Light Mode 🌞",
         "DARK": "Dark Mode 🌙"
@@ -32,4 +33,7 @@
     "CREATE_BTN": "Create",
     "SUCCESS_MSG": "✅ Dashboard \"{{name}}\" created successfully!"
   }
+  
+ 
+
 }

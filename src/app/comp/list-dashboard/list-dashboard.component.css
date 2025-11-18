@@ -212,3 +212,119 @@
   color: #d32f2f;
   font-weight: 500;
 }
+.dashboard-list-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.dashboards-section {
+  margin-bottom: 40px;
+}
+
+.dashboards-section h2 {
+  margin-bottom: 20px;
+  color: var(--text-color);
+  border-bottom: 2px solid var(--primary-color);
+  padding-bottom: 10px;
+}
+
+.dashboards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.dashboard-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  border-color: var(--primary-color);
+}
+
+.dashboard-card.shared-card {
+  opacity: 0.95;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.card-header h3 {
+  margin: 0;
+  color: var(--text-color);
+}
+
+.badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.owner-badge {
+  background: #28a745;
+  color: white;
+}
+
+.shared-badge {
+  background: #007bff;
+  color: white;
+}
+
+.card-description {
+  color: var(--text-color-secondary);
+  margin: 10px 0;
+  font-size: 14px;
+}
+
+.card-owner {
+  color: var(--text-color-secondary);
+  font-size: 13px;
+  margin: 8px 0;
+}
+
+.card-date {
+  display: block;
+  color: var(--text-color-secondary);
+  font-size: 12px;
+  margin-top: 10px;
+}
+
+.no-data-container {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-color-secondary);
+}
+
+.loading-container {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-color-secondary);
+}
+
+.error-container {
+  padding: 20px;
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  margin: 20px;
+}
+
+.error-message {
+  color: #721c24;
+  margin: 0;
+}

@@ -122,7 +122,25 @@ export class DashboardService {
   // ============================================
 
   /**
-   * Share dashboard with another user
+   * Share dashboard with another user by username
+   * The backend will look up the user ID
+   */
+  shareDashboardByUsername(
+    dashboardId: string,
+    targetUsername: string,
+    permission: 'view' | 'edit' | 'admin',
+    userId: string
+  ): Observable<{ message: string; dashboard: Dashboard }> {
+    return this.http
+      .post<{ message: string; dashboard: Dashboard }>(
+        `${this.apiUrl}/${dashboardId}/share`,
+        { targetUsername, permission, userId }
+      )
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Share dashboard with another user by user ID
    */
   shareDashboard(
     id: string,
@@ -179,9 +197,6 @@ export class DashboardService {
       .pipe(catchError(this.handleError));
   }
 
-  /**
-   * Get all comments for a dashboard
-   */
   /**
    * Get all comments for a dashboard
    */

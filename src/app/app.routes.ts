@@ -4,7 +4,6 @@ import { NotFoundComponent } from './comp/not-found/not-found.component';
 import { DashboardComponent } from './comp/dashboard/dashboard.component';
 import { CreateDashboardComponent } from './comp/create-dashboard/create-dashboard.component';
 import { ListDashboardComponent } from './comp/list-dashboard/list-dashboard.component';
-import { DashboardItemComponent } from './comp/dashboard-item/dashboard-item.component';
 import { BuildQueryComponent } from './comp/build-query/build-query.component';
 import { AjouterRoleComponent } from './comp/ajouter-role/ajouter-role.component';
 import { ModifierRoleComponent } from './comp/modifier-role/modifier-role.component';

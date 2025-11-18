@@ -1,6 +1,27 @@
 <div class="create-page-wrapper">
   <div class="dashboard-form-card">
     <h2>{{ 'CREATE_DASHBOARD_PAGE.TITLE' | translate }}</h2>
+    
+    <!-- Debug info -->
+    <div style="background: #f0f0f0; padding: 10px; margin-bottom: 10px; font-size: 12px;">
+      <p>Debug - User ID: {{ currentUserId }}</p>
+      <p>Debug - Name: {{ newDashboardName }}</p>
+      <p>Debug - IsLoading: {{ isLoading }}</p>
+    </div>
+
+    <!-- Error Message -->
+    @if (errorMessage) {
+      <div style="color: red; margin-bottom: 10px; padding: 10px; background: #ffe0e0; border-radius: 4px;">
+        {{ errorMessage }}
+      </div>
+    }
+
+    <!-- Success Message -->
+    @if (successMessage) {
+      <div style="color: green; margin-bottom: 10px; padding: 10px; background: #e0ffe0; border-radius: 4px;">
+        {{ successMessage }}
+      </div>
+    }
 
     <div class="form-group">
       <label for="name">{{ 'CREATE_DASHBOARD_PAGE.NAME_LABEL' | translate }}</label>
@@ -23,18 +44,12 @@
     </div>
 
     <div class="form-actions">
-      <button class="btn-reset" (click)="onReset()">
+      <button class="btn-reset" (click)="onReset()" [disabled]="isLoading">
         {{ 'CREATE_DASHBOARD_PAGE.RESET_BTN' | translate }}
       </button>
-      <button class="btn-create" (click)="createDashboard()">
-        {{ 'CREATE_DASHBOARD_PAGE.CREATE_BTN' | translate }}
+      <button class="btn-create" (click)="createDashboard()" [disabled]="isLoading">
+        {{ isLoading ? 'Creating...' : ('CREATE_DASHBOARD_PAGE.CREATE_BTN' | translate) }}
       </button>
     </div>
-
-    @if (isCreated) {
-      <p class="success-message">
-        {{ 'CREATE_DASHBOARD_PAGE.SUCCESS_MSG' | translate:{ name: dashboard.name } }}
-      </p>
-    }
   </div>
 </div>

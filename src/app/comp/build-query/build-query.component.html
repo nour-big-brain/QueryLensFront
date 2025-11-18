@@ -151,39 +151,37 @@
           <option value="builder">Builder</option>
           <option value="native">Native SQL</option>
           <option value="ai">AI Generated</option>
-          
         </select>
       </div>
       
-<!-- Chart Type Selection (NEW) -->
-<div class="form-group">
-  <label for="chartType">Chart Type <span class="required">*</span></label>
-  <select
-    id="chartType"
-    formControlName="chartType"
-    [class.is-invalid]="
-      buildQueryForm.get('chartType')?.invalid &&
-      buildQueryForm.get('chartType')?.touched
-    "
-  >
-    <option value="bar">Bar Chart</option>
-    <option value="line">Line Chart</option>
-    <option value="area">Area Chart</option>
-    <option value="pie">Pie Chart</option>
-    <option value="donut">Donut Chart</option>
-    <option value="radar">Radar Chart</option>
-    <option value="heatmap">Heatmap</option>
-    <option value="scatter">Scatter Plot</option>
-    <option value="mixed">Mixed Chart</option>
-  </select>
-  @if (
-    buildQueryForm.get('chartType')?.invalid &&
-    buildQueryForm.get('chartType')?.touched
-  ) {
-  <small class="error-text">Chart Type is required</small>
-  }
-</div>
-
+      <!-- Chart Type Selection -->
+      <div class="form-group">
+        <label for="chartType">Chart Type <span class="required">*</span></label>
+        <select
+          id="chartType"
+          formControlName="chartType"
+          [class.is-invalid]="
+            buildQueryForm.get('chartType')?.invalid &&
+            buildQueryForm.get('chartType')?.touched
+          "
+        >
+          <option value="bar">Bar Chart</option>
+          <option value="line">Line Chart</option>
+          <option value="area">Area Chart</option>
+          <option value="pie">Pie Chart</option>
+          <option value="donut">Donut Chart</option>
+          <option value="radar">Radar Chart</option>
+          <option value="heatmap">Heatmap</option>
+          <option value="scatter">Scatter Plot</option>
+          <option value="mixed">Mixed Chart</option>
+        </select>
+        @if (
+          buildQueryForm.get('chartType')?.invalid &&
+          buildQueryForm.get('chartType')?.touched
+        ) {
+        <small class="error-text">Chart Type is required</small>
+        }
+      </div>
 
       <!-- Aggregation -->
       <div class="form-group">
@@ -194,27 +192,6 @@
           <option value="sum">Sum</option>
           <option value="avg">Average</option>
         </select>
-      </div>
-
-      <!-- User ID -->
-      <div class="form-group">
-        <label for="userId">User ID (Creator) <span class="required">*</span></label>
-        <input
-          id="userId"
-          type="text"
-          formControlName="userId"
-          placeholder="Enter user MongoDB ID"
-          [class.is-invalid]="
-            buildQueryForm.get('userId')?.invalid &&
-            buildQueryForm.get('userId')?.touched
-          "
-        />
-        @if (
-          buildQueryForm.get('userId')?.invalid &&
-          buildQueryForm.get('userId')?.touched
-        ) {
-        <small class="error-text">User ID is required</small>
-        }
       </div>
 
       <!-- JSON Preview -->
@@ -242,7 +219,7 @@
           type="button"
           class="btn-create"
           (click)="createQuery()"
-          [disabled]="buildQueryForm.invalid || loading"
+          [disabled]="buildQueryForm.invalid || loading || !currentUserId"
         >
           @if (loading) {
           <span class="spinner"></span>
@@ -331,6 +308,7 @@
   </div>
 </div>
 }
+
 <!-- Success Message with Sync Status -->
 @if (isCreated && createdQuery) {
 <div class="query-info">
@@ -353,7 +331,7 @@
     <span class="badge badge-chart">{{ createdQuery.chartType || 'bar' }}</span>
   </div>
 
- @if (isCreated && createdQuery) {
+  @if (isCreated && createdQuery) {
   <div class="query-created-card">
     <h3>Query Created Successfully!</h3>
     <p><strong>{{ createdQuery.title }}</strong></p>
@@ -380,7 +358,7 @@
       </button>
     }
   </div>
-}
+  }
 
   <div class="info-item">
     <strong>Created At:</strong>

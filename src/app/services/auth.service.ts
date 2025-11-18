@@ -6,10 +6,10 @@ import { catchError, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 
 export interface User {
-  userId: string;
+  _id: string;
   username: string;
   email: string;
-  roleId: string | null;
+  roleId: any;
 }
 
 export interface AuthResponse {
@@ -59,6 +59,15 @@ export class AuthService {
     );
   }
 
+  /**
+   * Get user ID by username
+   */
+  getUserIdByUsername(username: string): Observable<{ _id: string; username: string }> {
+    return this.http.get<{ _id: string; username: string }>(
+      `${this.apiUrl}/user/${username}`
+    ).pipe(catchError(this.handleError));
+  }
+
   private handleAuthentication(res: AuthResponse) {
     localStorage.setItem(this.tokenKey, res.token);
     this.userSubject.next(res.user);
@@ -70,11 +79,11 @@ export class AuthService {
 
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      const user = {
-        userId: payload.userId,
+      const user: User = {
+        _id: payload._id,
         username: payload.username || 'User',
         email: payload.email || '',
-        roleId: payload.roleId || null
+        roleId: null
       };
       this.userSubject.next(user);
     } catch (e) {

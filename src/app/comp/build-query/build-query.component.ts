@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -12,7 +12,10 @@ import {
   DataSourceService,
 } from '../../services/data-source.service';
 import { DashboardService } from '../../services/dashboard.service';
+import { AuthService } from '../../services/auth.service';
 import { Dashboard } from '../../models/dashboard';
+import { Subject } from 'rxjs';
+import { takeUntil, filter } from 'rxjs/operators';
 
 interface Table {
   id: number;
@@ -21,8 +24,6 @@ interface Table {
   description?: string;
 }
 
-
-
 @Component({
   selector: 'app-build-query',
   standalone: true,
@@ -30,7 +31,7 @@ interface Table {
   templateUrl: './build-query.component.html',
   styleUrl: './build-query.component.css',
 })
-export class BuildQueryComponent implements OnInit {
+export class BuildQueryComponent implements OnInit, OnDestroy {
   buildQueryForm: FormGroup;
   isCreated = false;
   loading = false;
@@ -51,30 +52,49 @@ export class BuildQueryComponent implements OnInit {
   selectedDashboardId: string | null = null;
   assigningToDashboard = false;
   dashboardError: string | null = null;
-  // Add this line with your other properties
-retryingQueryId: string | null = null;
+  retryingQueryId: string | null = null;
+
+  currentUserId: string | null = null;
+  private destroy$ = new Subject<void>();
   private syncStatus = new Map<string, 'idle' | 'syncing' | 'synced'>();
 
   constructor(
     private fb: FormBuilder,
     private queryService: QueryService,
     private datasourceService: DataSourceService,
-    private dashboardService: DashboardService
+    private dashboardService: DashboardService,
+    private authService: AuthService
   ) {
     this.buildQueryForm = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(3)]],
       description: ['', Validators.required],
       dataSource: ['', Validators.required],
       type: ['builder', Validators.required],
-      chartType: ['bar', Validators.required],  // ✅ NEW
+      chartType: ['bar', Validators.required],
       tableId: ['', Validators.required],
       aggregation: ['none'],
-      userId: ['', Validators.required],
     });
   }
 
-
   ngOnInit(): void {
+    // Get user ID from AuthService
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser?._id) {
+      this.currentUserId = currentUser._id;
+    } else {
+      // Subscribe to user changes if not loaded yet
+      this.authService.user$
+        .pipe(
+          filter(user => user !== null),
+          takeUntil(this.destroy$)
+        )
+        .subscribe(user => {
+          if (user?._id) {
+            this.currentUserId = user._id;
+          }
+        });
+    }
+
     this.fetchDataSources();
   }
 
@@ -163,10 +183,15 @@ retryingQueryId: string | null = null;
     return query;
   }
 
-   createQuery(): void {
+  createQuery(): void {
     if (this.buildQueryForm.invalid) {
       this.buildQueryForm.markAllAsTouched();
       this.error = 'Please fill in all required fields correctly';
+      return;
+    }
+
+    if (!this.currentUserId) {
+      this.error = 'User not authenticated. Please log in.';
       return;
     }
 
@@ -181,9 +206,9 @@ retryingQueryId: string | null = null;
       description: formValue.description,
       dataSource: formValue.dataSource,
       type: formValue.type,
-      chartType: formValue.chartType,  // ✅ NEW - Pass chart type
+      chartType: formValue.chartType,
       queryDefinition: this.generateQueryDefinition(),
-      userId: formValue.userId,
+      userId: this.currentUserId,  // ✅ Use userId from AuthService
     };
 
     this.queryService.buildQuery(buildQueryRequest).subscribe({
@@ -193,7 +218,6 @@ retryingQueryId: string | null = null;
         this.success = `Query "${response.title}" created successfully!`;
         this.loading = false;
 
-        // Open dashboard modal after successful creation
         setTimeout(() => {
           this.openDashboardModal();
         }, 500);
@@ -208,24 +232,25 @@ retryingQueryId: string | null = null;
   }
 
   openDashboardModal(): void {
+    if (!this.currentUserId) {
+      this.dashboardError = 'User not authenticated';
+      return;
+    }
+
     this.showDashboardModal = true;
     this.selectedDashboardId = null;
     this.dashboardError = null;
     this.loadingDashboards = true;
 
-    // Use hardcoded user ID for testing
-    const userId = '6910cda02f1185a181e3e542';
-    
-    console.log('Opening dashboard modal with userId:', userId);
+    console.log('Opening dashboard modal with userId:', this.currentUserId);
 
-    // Use getDashboards instead - it returns all dashboards for a user (owned, shared, public)
-    this.dashboardService.getDashboards(userId).subscribe({
+    this.dashboardService.getDashboards(this.currentUserId).subscribe({
       next: (dashboards) => {
         console.log('Fetched dashboards:', dashboards);
         this.dashboards = dashboards || [];
         this.loadingDashboards = false;
         if (this.dashboards.length === 0) {
-          console.warn('No dashboards found for user:', userId);
+          console.warn('No dashboards found for user:', this.currentUserId);
         }
       },
       error: (err) => {
@@ -257,7 +282,6 @@ retryingQueryId: string | null = null;
       dashboardId: this.selectedDashboardId
     });
 
-    // Use QueryService's assignQueryToDashboard method
     this.queryService
       .assignQueryToDashboard(this.createdQuery._id, this.selectedDashboardId)
       .subscribe({
@@ -294,6 +318,7 @@ retryingQueryId: string | null = null;
   resetForm(): void {
     this.buildQueryForm.reset({
       type: 'builder',
+      chartType: 'bar',
       aggregation: 'none',
     });
     this.isCreated = false;
@@ -320,34 +345,37 @@ retryingQueryId: string | null = null;
   get selectedDataSourceId(): string | null {
     return this.buildQueryForm.get('dataSource')?.value || null;
   }
+
   retryMetabaseSync(queryId: string): void {
-  // Prevent double-clicks
-  if (this.retryingQueryId === queryId) return;
+    if (this.retryingQueryId === queryId) return;
 
-  this.retryingQueryId = queryId;
-  this.error = null;
-  this.success = null;
+    this.retryingQueryId = queryId;
+    this.error = null;
+    this.success = null;
 
-  this.queryService.retryQuerySync(queryId).subscribe({
-    next: (response) => {
-      console.log('Query sync retried successfully:', response);
-      this.success = `Sync retried successfully! Query will appear in Metabase shortly.`;
+    this.queryService.retryQuerySync(queryId).subscribe({
+      next: (response) => {
+        console.log('Query sync retried successfully:', response);
+        this.success = `Sync retried successfully! Query will appear in Metabase shortly.`;
 
-      // Update the createdQuery if it's the same one
-      if (this.createdQuery?._id === queryId) {
-        this.createdQuery.metabaseCardId = response.metabaseCardId;
+        if (this.createdQuery?._id === queryId) {
+          this.createdQuery.metabaseCardId = response.metabaseCardId;
+        }
+
+        this.retryingQueryId = null;
+
+        setTimeout(() => this.success = null, 5000);
+      },
+      error: (err) => {
+        console.error('Failed to retry sync:', err);
+        this.error = err.error?.error || 'Failed to retry sync. Please try again later.';
+        this.retryingQueryId = null;
       }
+    });
+  }
 
-      this.retryingQueryId = null;
-
-      setTimeout(() => this.success = null, 5000);
-    },
-    error: (err) => {
-      console.error('Failed to retry sync:', err);
-      this.error = err.error?.error || 'Failed to retry sync. Please try again later.';
-      this.retryingQueryId = null;
-    }
-  });
-}
-   
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 }

@@ -11,17 +11,24 @@
   </button>
 
   <ul class="navbar-links" [class.open]="menuOpen">
+    @if (isLoggedIn) {
+      <li class="user-info">
+        <span>{{ currentUsername }}</span>
+      </li>
+    }
+
     <li><a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">{{ 'NAV.HOME' | translate }}</a></li>
-    <!-- <li><a routerLink="/dashboard" routerLinkActive="active">{{ 'NAV.DASHBOARD' | translate }}</a></li> -->
-    <li><a routerLink="/listDashboard" routerLinkActive="active">{{ 'NAV.LIST_DASHBOARD' | translate }}</a></li>
-    <li><a routerLink="/createDashboard" routerLinkActive="active">{{ 'NAV.CREATE_DASHBOARD' | translate }}</a></li>
-    <li><a routerLink="/buildQuery" routerLinkActive="active">{{ 'BUILDQUERY.BUILDQUERY' | translate }}</a></li>
+    
+    @if (isLoggedIn) {
+      <li><a routerLink="/listDashboard" routerLinkActive="active">{{ 'NAV.LIST_DASHBOARD' | translate }}</a></li>
+      <li><a routerLink="/createDashboard" routerLinkActive="active">{{ 'NAV.CREATE_DASHBOARD' | translate }}</a></li>
+      <li><a routerLink="/buildQuery" routerLinkActive="active">{{ 'BUILDQUERY.BUILDQUERY' | translate }}</a></li>
+    }
 
     <li>
-      <button (click)="toggleTheme()">
+      <button class="theme-btn" (click)="toggleTheme()">
         {{ (isDark ? 'THEME.LIGHT' : 'THEME.DARK') | translate }}
       </button>
-
     </li>
 
     <li>
@@ -31,5 +38,19 @@
         <option value="ar">{{ 'LANG.ARABIC' | translate }}</option>
       </select>
     </li>
+
+    @if (isLoggedIn) {
+      <li>
+        <button class="logout-btn" (click)="logout()">
+          {{ 'NAV.LOGOUT' | translate }}
+        </button>
+      </li>
+    } @else {
+      <li>
+        <a routerLink="/login" class="login-link">
+          {{ 'NAV.LOGIN' | translate }}
+        </a>
+      </li>
+    }
   </ul>
 </nav>

@@ -1,8 +1,10 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { GridsterConfig, GridsterItem, GridsterModule } from 'angular-gridster2';
+import { Subject } from 'rxjs';
+import { takeUntil, filter } from 'rxjs/operators';
 
 import { BarChartComponent } from '../../charts/bar-chart/bar-chart.component';
 import { LineChartComponent } from '../../charts/line-chart/line-chart.component';
@@ -19,6 +21,7 @@ import { Dashboard } from '../../models/dashboard';
 import { DashboardService } from '../../services/dashboard.service';
 import { ChartService } from '../../services/chart.service';
 import { QueryService } from '../../services/query.service';
+import { AuthService } from '../../services/auth.service';
 
 interface Comment {
   _id?: string;
@@ -54,7 +57,7 @@ interface DashboardChart {
   styleUrls: ['./dashboard.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   options!: GridsterConfig;
   dashboardData: Dashboard | null = null;
   chartData: DashboardChart[] = [];
@@ -75,11 +78,15 @@ export class DashboardComponent implements OnInit {
   showCommentsSidebar = true;
   commentsLoading = false;
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private dashboardService: DashboardService,
     private chartService: ChartService,
     private queryService: QueryService,
+    private authService: AuthService,
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone
   ) { }
@@ -95,7 +102,7 @@ export class DashboardComponent implements OnInit {
       this.permission = myAccess?.permission ||
         (navigation.dashboard.ownerId === this.currentUserId ? 'owner' : 'view');
 
-      this.initializeGridster();  // ← must be AFTER setting permission!
+      this.initializeGridster();
       this.loadChartsFromQueries();
       this.loadComments();
     } else {
@@ -159,12 +166,12 @@ export class DashboardComponent implements OnInit {
       itemChangeCallback: () => this.onItemChange()
     };
   }
+
   loadDashboard(id: string) {
     this.dashboardService.getDashboardById(id, this.currentUserId).subscribe({
       next: (data) => {
         this.dashboardData = data;
 
-        // Determine permission
         const myAccess = data.sharedWith?.find((s: any) => s.userId === this.currentUserId);
         this.permission = myAccess?.permission || 'view';
 
@@ -172,9 +179,7 @@ export class DashboardComponent implements OnInit {
           this.permission = 'owner';
         }
 
-        // CRITICAL: Re-initialize gridster AFTER permission is set
         this.initializeGridster();
-
         this.loadChartsFromQueries();
         this.loadComments();
         this.isLoading = false;
@@ -186,6 +191,7 @@ export class DashboardComponent implements OnInit {
       }
     });
   }
+
   canEdit(): boolean {
     const p = this.permission;
     return p === 'owner' || p === 'admin' || p === 'edit';
@@ -275,10 +281,34 @@ export class DashboardComponent implements OnInit {
   }
 
   private initializeUser() {
-    let userId = sessionStorage.getItem('tempUserId') || '6910cda02f1185a181e3e542';
-    let username = sessionStorage.getItem('tempUsername') || 'nourr';
-    this.currentUserId = userId;
-    this.currentUsername = username;
+    // Try to get user from AuthService first
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser?._id && currentUser?.username) {
+      this.currentUserId = currentUser._id;  // Use _id (MongoDB ObjectId)
+      this.currentUsername = currentUser.username;
+      console.log('User initialized from AuthService:', { _id: this.currentUserId, username: this.currentUsername });
+    } else {
+      // Fallback: subscribe to user changes in case user hasn't loaded yet
+      this.authService.user$
+        .pipe(
+          filter(user => user !== null),
+          takeUntil(this.destroy$)
+        )
+        .subscribe(user => {
+          if (user?._id && user?.username) {
+            this.currentUserId = user._id;  // Use _id (MongoDB ObjectId)
+            this.currentUsername = user.username;
+            console.log('User updated from subscription:', { _id: this.currentUserId, username: this.currentUsername });
+            this.cdr.markForCheck();
+          }
+        });
+
+      // If no user after timeout, redirect to login
+      if (!this.authService.isLoggedIn()) {
+        console.warn('User not authenticated, redirecting to login');
+        this.router.navigate(['/login']);
+      }
+    }
   }
 
   openShareModal() {
@@ -293,18 +323,26 @@ export class DashboardComponent implements OnInit {
     this.showShareModal = false;
     this.cdr.markForCheck();
   }
-
-  confirmShare() {
+confirmShare() {
     if (!this.dashboardData?._id) return;
-    this.dashboardService.shareDashboard(
+    
+    const targetUsername = this.targetUsernameOrId.trim();
+    if (!targetUsername) {
+      this.shareMessage = 'Please enter a username';
+      this.shareSuccess = false;
+      this.cdr.markForCheck();
+      return;
+    }
+
+    // Use the new shareDashboardByUsername method
+    this.dashboardService.shareDashboardByUsername(
       this.dashboardData._id,
-      this.targetUsernameOrId.trim(),
-      this.targetUsernameOrId.trim(),
+      targetUsername,
       this.sharePermission,
       this.currentUserId
     ).subscribe({
       next: () => {
-        this.shareMessage = 'Shared successfully!';
+        this.shareMessage = `Shared successfully with ${targetUsername}!`;
         this.shareSuccess = true;
         this.cdr.markForCheck();
         setTimeout(() => this.closeShareModal(), 2000);
@@ -329,11 +367,16 @@ export class DashboardComponent implements OnInit {
   }
 
   onItemChange() {
-    // Trigger chart resize when gridster items change
     this.ngZone.runOutsideAngular(() => {
       setTimeout(() => {
         window.dispatchEvent(new Event('resize'));
       }, 100);
     });
   }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+  
 }

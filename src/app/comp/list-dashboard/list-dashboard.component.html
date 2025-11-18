@@ -1,12 +1,42 @@
 <div class="dashboard-list-container" *ngIf="!isLoading; else loading">
-  <h2>Your Dashboards</h2>
-  
-  <div *ngIf="dashboards.length > 0; else noDashboards">
-    <div *ngFor="let db of dashboards" class="dashboard-card" (click)="openDashboard(db)">
-      <h3>{{ db.name }}</h3>
-      <p>{{ db.description || 'No description' }}</p>
-      <small>Created: {{ db.createdAt | date:'short' }}</small>
+  <h1>Dashboards</h1>
+
+  <!-- Owned Dashboards Section -->
+  <section class="dashboards-section" *ngIf="ownedDashboards.length > 0">
+    <h2>My Dashboards</h2>
+    <div class="dashboards-grid">
+      <div *ngFor="let db of ownedDashboards" class="dashboard-card" (click)="openDashboard(db)">
+        <div class="card-header">
+          <h3>{{ db.name }}</h3>
+          <span class="badge owner-badge">Owner</span>
+        </div>
+        <p class="card-description">{{ db.description || 'No description' }}</p>
+        <small class="card-date">Created: {{ db.createdAt | date:'short' }}</small>
+      </div>
     </div>
+  </section>
+
+  <!-- Shared Dashboards Section -->
+  <section class="dashboards-section" *ngIf="sharedDashboards.length > 0">
+    <h2>Shared With Me</h2>
+    <div class="dashboards-grid">
+      <div *ngFor="let db of sharedDashboards" class="dashboard-card shared-card" (click)="openDashboard(db)">
+        <div class="card-header">
+          <h3>{{ db.name }}</h3>
+          <span class="badge shared-badge">
+            {{ getDashboardPermission(db, authService.getCurrentUser()?._id || '') }}
+          </span>
+        </div>
+        <p class="card-description">{{ db.description || 'No description' }}</p>
+        <p class="card-owner">Shared by: <strong>{{ db.ownerName }}</strong></p>
+        <small class="card-date">Created: {{ db.createdAt | date:'short' }}</small>
+      </div>
+    </div>
+  </section>
+
+  <!-- No Dashboards -->
+  <div class="no-data-container" *ngIf="dashboards.length === 0">
+    <p>No dashboards found. Create one to get started!</p>
   </div>
 </div>
 
@@ -16,13 +46,6 @@
   </div>
 </ng-template>
 
-<ng-template #noDashboards>
-  <div class="no-data-container">
-    <p>No dashboards found.</p>
-  </div>
-</ng-template>
-
 <div *ngIf="error" class="error-container">
   <p class="error-message">{{ error }}</p>
 </div>
-
