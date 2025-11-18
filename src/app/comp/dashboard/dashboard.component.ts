@@ -82,7 +82,7 @@ export class DashboardComponent implements OnInit {
     private queryService: QueryService,
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.initializeUser();
@@ -90,8 +90,12 @@ export class DashboardComponent implements OnInit {
     const navigation = window.history.state;
     if (navigation?.dashboard) {
       this.dashboardData = navigation.dashboard;
-      this.permission = navigation.permission || 'view';
-      this.initializeGridster();
+
+      const myAccess = navigation.dashboard.sharedWith?.find((s: any) => s.userId === this.currentUserId);
+      this.permission = myAccess?.permission ||
+        (navigation.dashboard.ownerId === this.currentUserId ? 'owner' : 'view');
+
+      this.initializeGridster();  // ← must be AFTER setting permission!
       this.loadChartsFromQueries();
       this.loadComments();
     } else {
@@ -155,13 +159,22 @@ export class DashboardComponent implements OnInit {
       itemChangeCallback: () => this.onItemChange()
     };
   }
-
   loadDashboard(id: string) {
     this.dashboardService.getDashboardById(id, this.currentUserId).subscribe({
       next: (data) => {
         this.dashboardData = data;
-        this.permission = data.ownerId === this.currentUserId ? 'owner' : 'view';
+
+        // Determine permission
+        const myAccess = data.sharedWith?.find((s: any) => s.userId === this.currentUserId);
+        this.permission = myAccess?.permission || 'view';
+
+        if (data.ownerId === this.currentUserId && this.permission === 'view') {
+          this.permission = 'owner';
+        }
+
+        // CRITICAL: Re-initialize gridster AFTER permission is set
         this.initializeGridster();
+
         this.loadChartsFromQueries();
         this.loadComments();
         this.isLoading = false;
@@ -173,13 +186,14 @@ export class DashboardComponent implements OnInit {
       }
     });
   }
-
   canEdit(): boolean {
-    return ['owner', 'admin', 'edit'].includes(this.permission);
+    const p = this.permission;
+    return p === 'owner' || p === 'admin' || p === 'edit';
   }
 
   canShare(): boolean {
-    return ['owner', 'admin'].includes(this.permission);
+    const p = this.permission;
+    return p === 'owner' || p === 'admin';
   }
 
   loadChartsFromQueries() {
@@ -304,7 +318,14 @@ export class DashboardComponent implements OnInit {
   }
 
   getPermissionBadge(): string {
-    return { owner: 'Owner', admin: 'Admin', edit: 'Can Edit', view: 'View Only' }[this.permission] || 'View Only';
+    switch (this.permission) {
+      case 'owner': return 'Owner';
+      case 'admin': return 'Admin';
+      case 'edit': return 'Can Edit';
+      case 'view':
+      default:
+        return 'View Only';
+    }
   }
 
   onItemChange() {

@@ -13,7 +13,7 @@
           <div class="permission-badge permission-{{ permission }}">{{ getPermissionBadge() }}</div>
         </div>
         <div class="header-buttons">
-          <button class="share-btn" (click)="openShareModal()" [disabled]="!canShare()">Share</button>
+          <button class="share-btn" (click)="openShareModal()" >Share</button>
           <button class="toggle-sidebar-btn" (click)="toggleCommentsSidebar()">
             {{ showCommentsSidebar ? 'Hide' : 'Show' }} 💬
           </button>
