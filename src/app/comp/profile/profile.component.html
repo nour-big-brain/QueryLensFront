@@ -1,0 +1,49 @@
+<!-- Page Wrapper -->
+<div class="profile-page-wrapper">
+
+  <!-- Left Container -->
+  <div class="left-container">
+    <h3>Sidebar / Extra Content</h3>
+    <p>Put stats, menu, or additional info here.</p>
+  </div>
+
+  <!-- Right Container (Profile Card) -->
+  <div class="right-container">
+    <div class="card">
+      <!-- Background SVG -->
+      <div class="card__img">
+        <svg width="100%" xmlns="http://www.w3.org/2000/svg">
+          <rect height="100%" width="100%" fill="#ffffff"></rect>
+          <defs>
+            <linearGradient gradientTransform="rotate(222,648,379)" y2="100%" y1="0" x2="0" x1="0" gradientUnits="userSpaceOnUse" id="a">
+              <stop stop-color="#ffffff" offset="0"></stop>
+              <stop stop-color="#FC726E" offset="1"></stop>
+            </linearGradient>
+          </defs>
+          <rect height="100%" width="100%" fill="url(#a)"></rect>
+        </svg>
+      </div>
+      
+      <!-- Dynamic Avatar -->
+      <div class="card__avatar" style="display: flex; flex-direction: inherit;">
+        <div class="avatar" [ngStyle]="{'background-color': getAvatarColor(user.username)}">
+          {{ user.username.charAt(0).toUpperCase() }}
+        </div>
+      </div>
+
+      <!-- Profile Info -->
+      <div class="card__title">{{ user.username }}</div>
+      <div class="card__title">{{ user.email }}</div>
+      <div class="card__subtitle">{{ user.roleId || 'No role assigned' }}</div>
+
+      <div class="card__wrapper">
+        <button class="card__btn" (click)="updateProfile()">Update</button>
+      </div>
+      <div>
+
+
+        
+    </div>
+  </div>
+
+</div>

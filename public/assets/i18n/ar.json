@@ -31,5 +31,8 @@
         "RESET_BTN": "إعادة تعيين",
         "CREATE_BTN": "إنشاء",
         "SUCCESS_MSG": "✅ تم إنشاء اللوحة \"{{name}}\" بنجاح!"
-  }
+  },
+    "PROFILE":{
+        "PROFILE": "حساب"
+    }
 }

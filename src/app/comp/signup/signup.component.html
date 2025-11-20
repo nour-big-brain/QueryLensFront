@@ -1,10 +1,15 @@
-<div class="create-page-wrapper">
-  <div class="dashboard-form-card">
-    <h2>Create Your Account</h2>
+<!-- Wrapper to center the form -->
+<div class="page-center">
+  <form class="form" (ngSubmit)="onSignup()" [class.was-validated]="submitted">
 
+    <h2 style="text-align:center; margin-bottom: 10px;">Create Your Account</h2>
+
+    <!-- Error -->
     @if (error) {
       <div class="alert alert-error">{{ error }}</div>
     }
+
+    <!-- Success -->
     @if (success) {
       <div class="alert alert-success">
         {{ success }} <br />
@@ -12,108 +17,150 @@
       </div>
     }
 
-    <form (ngSubmit)="onSignup()" [class.was-validated]="submitted">
-      <!-- Username -->
-      <div class="form-group">
-        <label for="reg-username">Username <span class="required">*</span></label>
+
+    <!-- USERNAME -->
+    <div class="flex-column">
+      <label>Username <span class="required">*</span></label>
+    </div>
+    <div class="inputForm">
+      <!-- Username Icon -->
+      <svg width="22" height="22" viewBox="0 0 24 24">
+        <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 
+                 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 
+                 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/>
+      </svg>
+
+      <input
+        class="input"
+        id="reg-username"
+        type="text"
+        [(ngModel)]="signupForm.username"
+        name="username"
+        placeholder="Choose a unique username"
+        required minlength="3" maxlength="20"
+      />
+    </div>
+    @if (submitted && !signupForm.username) {
+      <small class="error-text">Username is required</small>
+    }
+
+
+    <!-- EMAIL -->
+    <div class="flex-column">
+      <label>Email Address <span class="required">*</span></label>
+    </div>
+    <div class="inputForm">
+      <!-- Email Icon -->
+      <svg width="22" height="22" viewBox="0 0 24 24">
+        <path d="M2 4h20v16H2V4zm10 7L3.5 6h17L12 11z"/>
+      </svg>
+
+      <input
+        class="input"
+        id="reg-email"
+        type="email"
+        [(ngModel)]="signupForm.email"
+        name="email"
+        placeholder="you@example.com"
+        required email
+      />
+    </div>
+    @if (submitted && !signupForm.email) {
+      <small class="error-text">Valid email is required</small>
+    }
+
+
+    <!-- PASSWORD -->
+    <div class="flex-column">
+      <label>Password <span class="required">*</span></label>
+    </div>
+    <div class="inputForm">
+      <!-- Password Icon -->
+      <svg width="22" height="22" viewBox="0 0 24 24">
+        <path d="M17 8V6a5 5 0 00-10 0v2H5v14h14V8h-2zM9 
+                 6a3 3 0 016 0v2H9V6z"/>
+      </svg>
+
+      <input
+        class="input"
+        id="reg-password"
+        type="password"
+        [(ngModel)]="signupForm.password"
+        name="password"
+        placeholder="Create a strong password"
+        required minlength="6"
+      />
+    </div>
+    @if (submitted && signupForm.password && signupForm.password.length < 6) {
+      <small class="error-text">Password must be at least 6 characters</small>
+    }
+
+
+    <!-- CONFIRM PASSWORD -->
+    <div class="flex-column">
+      <label>Confirm Password <span class="required">*</span></label>
+    </div>
+    <div class="inputForm">
+      <!-- Confirm Icon -->
+      <svg width="22" height="22" viewBox="0 0 24 24">
+        <path d="M17 8V6a5 5 0 00-10 0v2H5v14h14V8h-2zM9 
+                 6a3 3 0 016 0v2H9V6z"/>
+      </svg>
+
+
+      <input
+        class="input"
+        id="reg-confirm"
+        type="password"
+        [(ngModel)]="signupForm.confirmPassword"
+        name="confirmPassword"
+        placeholder="Type password again"
+        required
+      />
+    </div>
+    @if (submitted && signupForm.password !== signupForm.confirmPassword) {
+      <small class="error-text">Passwords do not match</small>
+    }
+
+
+    <!-- TERMS CHECKBOX -->
+    <div class="flex-row" style="align-self: center; margin-top: 15px;">
+      <div>
         <input
-          id="reg-username"
-          type="text"
-          [(ngModel)]="signupForm.username"
-          name="username"
-          placeholder="Choose a unique username"
-          required
-          minlength="3"
-          maxlength="20"
-        />
-        @if (submitted && !signupForm.username) {
-          <small class="error-text">Username is required</small>
+        type="checkbox"
+        [(ngModel)]="signupForm.agreeTerms"
+        name="agreeTerms"
+        id="agree-terms"
+        required
+      />
+      <label for="agree-terms" style="font-size: 14px; line-height: 1.4;">
+        I agree to the <a href="#" style="color: var(--accent-color)">Terms</a> and
+        <a href="#" style="color: var(--accent-color)">Privacy Policy</a>
+      </label>
+      </div>
+    </div>
+
+
+    <!-- BUTTONS -->
+    <div style="display: flex; gap: 10px; margin-top: 20px;">
+      <button type="button" class="button-submit" style="background:#ccc; color:black" (click)="onReset()">
+        Reset
+      </button>
+
+      <button type="submit" class="button-submit" [disabled]="loading || !signupForm.agreeTerms">
+        @if (loading) {
+          <span class="spinner"></span>
         }
-      </div>
+        {{ loading ? 'Creating Account...' : 'Create Account' }}
+      </button>
+    </div>
 
-      <!-- Email -->
-      <div class="form-group">
-        <label for="reg-email">Email Address <span class="required">*</span></label>
-        <input
-          id="reg-email"
-          type="email"
-          [(ngModel)]="signupForm.email"
-          name="email"
-          placeholder="you@example.com"
-          required
-          email
-        />
-        @if (submitted && !signupForm.email) {
-          <small class="error-text">Valid email is required</small>
-        }
-      </div>
 
-      <!-- Password -->
-      <div class="form-group">
-        <label for="reg-password">Password <span class="required">*</span></label>
-        <input
-          id="reg-password"
-          type="password"
-          [(ngModel)]="signupForm.password"
-          name="password"
-          placeholder="Create a strong password"
-          required
-          minlength="6"
-        />
-        @if (submitted && signupForm.password && signupForm.password.length < 6) {
-          <small class="error-text">Password must be at least 6 characters</small>
-        }
-      </div>
+    <!-- LOGIN LINK -->
+    <p class="p">
+      Already have an account?
+      <a routerLink="/login" class="span">Sign in here</a>
+    </p>
 
-      <!-- Confirm Password -->
-      <div class="form-group">
-        <label for="reg-confirm">Confirm Password <span class="required">*</span></label>
-        <input
-          id="reg-confirm"
-          type="password"
-          [(ngModel)]="signupForm.confirmPassword"
-          name="confirmPassword"
-          placeholder="Type password again"
-          required
-        />
-        @if (submitted && signupForm.password !== signupForm.confirmPassword) {
-          <small class="error-text">Passwords do not match</small>
-        }
-      </div>
-
-      <!-- Terms Checkbox -->
-      <div class="form-group" style="flex-direction: row; gap: 10px; margin-bottom: 25px;">
-        <input
-          type="checkbox"
-          [(ngModel)]="signupForm.agreeTerms"
-          name="agreeTerms"
-          id="agree-terms"
-          required
-        />
-        <label for="agree-terms" style="margin: 0; font-weight: normal; font-size: 13px;">
-          I agree to the <a href="#" style="color: var(--accent-color);">Terms of Service</a> and
-          <a href="#" style="color: var(--accent-color);">Privacy Policy</a>
-        </label>
-      </div>
-
-      <!-- Submit Button -->
-      <div class="form-actions">
-        <button type="button" class="btn-reset" (click)="onReset()">Reset</button>
-        <button type="submit" class="btn-create" [disabled]="loading || !signupForm.agreeTerms">
-          @if (loading) {
-            <span class="spinner"></span>
-          }
-          {{ loading ? 'Creating Account...' : 'Create Account' }}
-        </button>
-      </div>
-
-      <!-- Login Link -->
-      <div style="text-align: center; margin-top: 30px; color: var(--text-color); font-size: 14px;">
-        Already have an account?
-        <a routerLink="/login" style="color: var(--accent-color); font-weight: 600; text-decoration: none;">
-          Sign in here
-        </a>
-      </div>
-    </form>
-  </div>
+  </form>
 </div>

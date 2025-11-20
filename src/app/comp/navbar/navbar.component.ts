@@ -22,8 +22,10 @@ export class NavbarComponent implements OnInit {
   public menuOpen: boolean = false;
   public isLoggedIn: boolean = false;
   public currentUsername: string = '';
+  open = false;
 
   ngOnInit() {
+    console.log("refreshubg")
     // Check if user is logged in
     this.isLoggedIn = this.authService.isLoggedIn();
     

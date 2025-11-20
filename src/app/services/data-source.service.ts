@@ -49,6 +49,7 @@ export interface FieldsResponse {
 })
 export class DataSourceService {
   private apiUrl = 'http://localhost:5000/dataSources';
+  
 
   constructor(private http: HttpClient) {}
 
@@ -57,7 +58,7 @@ export class DataSourceService {
   }
 
   syncDataSourceToMetabase(id: string, credentials: ConnectionCredentials): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/sync/${id}`, {
+    return this.http.post<any>(`${this.apiUrl}/${id}/sync`, {
       host: credentials.host,
       port: credentials.port,
       database: credentials.database,

@@ -12,6 +12,7 @@ import { UserManagementComponent } from './comp/user-management/user-management.
 import { DataSourceComponent } from './comp/data-source/data-source.component';
 import { LoginComponent } from './comp/login/login.component';
 import { SignupComponent } from './comp/signup/signup.component';
+import { ProfileComponent } from './comp/profile/profile.component';
 
 export const routes: Routes = [
     { path: 'home', title: 'Home', component: HomeComponent },
@@ -20,6 +21,7 @@ export const routes: Routes = [
     { path: 'listDashboard', title: 'listDashboard', component: ListDashboardComponent },
     { path: 'login', component: LoginComponent },
     { path: 'signup', component: SignupComponent },
+    { path: 'profile', title:'profile', component: ProfileComponent},
     { path: 'user-management', title: 'User Management', component: UserManagementComponent },
     { path: 'data-source', title: 'datasource', component: DataSourceComponent },
     { path: 'roles', title: 'edit', component: RolesListComponent },

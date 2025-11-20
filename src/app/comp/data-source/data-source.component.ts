@@ -68,7 +68,7 @@ export class DataSourceComponent implements OnInit {
         port: fv.port || 3306,
         database: fv.database.trim(),
         username: fv.username?.trim() || '',
-        password: fv.password?.trim() || '' // empty string if no password
+        password: fv.password?.trim() || null // empty string if no password
       }
     };
 

@@ -32,6 +32,9 @@
     "RESET_BTN": "Reset",
     "CREATE_BTN": "Create",
     "SUCCESS_MSG": "✅ Dashboard \"{{name}}\" created successfully!"
+  },
+    "PROFILE":{
+      "PROFILE": "Profile"
   }
   
  

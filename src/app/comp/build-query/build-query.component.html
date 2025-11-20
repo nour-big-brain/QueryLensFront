@@ -59,6 +59,15 @@
       <div class="form-group">
         <label for="dataSource">Data Source <span class="required">*</span></label>
         <div class="datasource-container">
+          
+          <div tabindex="0" class="plusButton" (click)="navigateToCreateDataSource()" (keydown.enter)="navigateToCreateDataSource()">
+          <svg class="plusIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30">
+              <g mask="url(#mask0_21_345)">
+                <path d="M13.75 23.75V16.25H6.25V13.75H13.75V6.25H16.25V13.75H23.75V16.25H16.25V23.75H13.75Z"></path>
+              </g>
+            </svg>
+          </div>
+
           @if (loadingDataSources) {
           <div class="loading">Loading data sources...</div>
           } @else {
@@ -94,7 +103,6 @@
           </button>
           }
           }
-
           @if (buildQueryForm.get('dataSource')?.invalid && buildQueryForm.get('dataSource')?.touched) {
           <small class="error-text">Data Source is required</small>
           }

@@ -4,6 +4,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { UserService } from './user.service';
 
 export interface User {
   _id: string;
@@ -27,7 +28,7 @@ export class AuthService {
   private userSubject = new BehaviorSubject<User | null>(null);
   user$ = this.userSubject.asObservable();
 
-  constructor(private http: HttpClient, private router: Router) {
+  constructor(private http: HttpClient, private router: Router, private userService: UserService) {
     this.loadUserFromToken();
   }
 
@@ -79,13 +80,11 @@ export class AuthService {
 
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      const user: User = {
-        _id: payload._id,
-        username: payload.username || 'User',
-        email: payload.email || '',
-        roleId: null
-      };
-      this.userSubject.next(user);
+      const id = payload.userId; 
+      this.userService.getUserById(id).subscribe({
+        next: user => {this.userSubject.next(user); console.log("the user: ",user)},
+        error: () => this.logout()
+      })
     } catch (e) {
       this.logout();
     }

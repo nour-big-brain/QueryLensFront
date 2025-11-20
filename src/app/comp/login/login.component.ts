@@ -35,11 +35,11 @@ export class LoginComponent {
     this.error = '';
     this.success = '';
 
-    this.authService.login(this.loginForm.username, this.loginForm.password).subscribe({
+    this.authService.login(this.loginForm.username.trim(), this.loginForm.password.trim()).subscribe({
       next: () => {
         this.loading = false;
         this.success = 'Login successful! Redirecting...';
-        setTimeout(() => this.router.navigate(['/dashboard']), 1000);
+        setTimeout(() => this.router.navigate(['/listDashboard']), 1000);
       },
       error: (err) => {
         this.loading = false;

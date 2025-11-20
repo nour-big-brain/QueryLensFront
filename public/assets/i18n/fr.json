@@ -31,5 +31,9 @@
         "RESET_BTN": "Réinitialiser",
         "CREATE_BTN": "Créer",
         "SUCCESS_MSG": "✅ Tableau \"{{name}}\" créé avec succès !"
+    },
+    "PROFILE":{
+        "PROFILE": "Profile"
     }
+    
 }
