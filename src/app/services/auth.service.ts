@@ -1,4 +1,3 @@
-// src/app/services/auth.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
@@ -28,7 +27,20 @@ export class AuthService {
   user$ = this.userSubject.asObservable();
 
   constructor(private http: HttpClient, private router: Router) {
+    this.initializeAuth();
+  }
+
+  private initializeAuth() {
+    // Try to restore token and user from localStorage
     this.loadUserFromToken();
+    
+    // If token exists but user wasn't loaded, try refreshing it
+    const token = this.getToken();
+    if (token && !this.userSubject.value) {
+      this.refreshToken().subscribe({
+        error: () => this.logout() // Invalid token, clear it
+      });
+    }
   }
 
   register(username: string, email: string, password: string): Observable<AuthResponse> {
@@ -54,14 +66,15 @@ export class AuthService {
     if (!token) return throwError(() => new Error('No token'));
 
     return this.http.post<{ token: string }>(`${this.apiUrl}/refresh-token`, { token }).pipe(
-      tap(res => localStorage.setItem(this.tokenKey, res.token)),
+      tap(res => {
+        localStorage.setItem(this.tokenKey, res.token);
+        // Reload user from the new token
+        this.loadUserFromToken();
+      }),
       catchError(this.handleError)
     );
   }
 
-  /**
-   * Get user ID by username
-   */
   getUserIdByUsername(username: string): Observable<{ _id: string; username: string }> {
     return this.http.get<{ _id: string; username: string }>(
       `${this.apiUrl}/user/${username}`
@@ -75,7 +88,10 @@ export class AuthService {
 
   private loadUserFromToken() {
     const token = this.getToken();
-    if (!token) return;
+    if (!token) {
+      this.userSubject.next(null);
+      return;
+    }
 
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
@@ -96,7 +112,7 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    return !!this.getToken();
+    return !!this.getToken() && !!this.userSubject.value;
   }
 
   getCurrentUser(): User | null {
