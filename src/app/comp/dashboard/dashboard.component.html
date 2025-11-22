@@ -1,104 +1,183 @@
 <div *ngIf="isLoading" class="loading-container">
+  <div class="spinner"></div>
   <p>Loading dashboard...</p>
 </div>
 
 <div *ngIf="!isLoading && dashboardData" class="dashboard-full-layout">
-  <div class="dashboard-main">
-    <div class="dashboard-header">
-      <div class="header-top">
-        <div class="header-info">
-          <h2>{{ dashboardData.name }}</h2>
-          <p>{{ dashboardData.description }}</p>
-          <small>Owner: {{ dashboardData.ownerName }} | {{ dashboardData.updatedAt | date:'short' }}</small>
-          <div class="permission-badge permission-{{ permission }}">{{ getPermissionBadge() }}</div>
-        </div>
-        <div class="header-buttons">
-          <button class="share-btn" (click)="openShareModal()" >Share</button>
-          <button class="toggle-sidebar-btn" (click)="toggleCommentsSidebar()">
-            {{ showCommentsSidebar ? 'Hide' : 'Show' }} 💬
-          </button>
+  <!-- Header -->
+  <div class="dashboard-header">
+    <div class="header-left">
+      <div class="header-info">
+        <h1>{{ dashboardData.name }}</h1>
+        <p class="description">{{ dashboardData.description }}</p>
+        <div class="meta-info">
+          <span class="meta-item">Owner: <strong>{{ dashboardData.ownerName }}</strong></span>
+          <span class="meta-item">Updated: <strong>{{ dashboardData.updatedAt | date:'short' }}</strong></span>
         </div>
       </div>
     </div>
+    <div class="header-right">
+      <div class="permission-badge" [ngClass]="'permission-' + permission">
+        {{ getPermissionBadge() }}
+      </div>
+      
+      <!-- Edit Mode Button -->
+      <button 
+        class="btn-edit-mode" 
+        [class.active]="editMode"
+        (click)="toggleEditMode()"
+        *ngIf="canEdit()"
+        title="Toggle edit mode"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+        </svg>
+      </button>
 
-    <ng-container *ngIf="chartData.length; else noCharts">
-      <gridster [options]="options" class="gridster-wrapper" (itemChange)="onItemChange()">
-        <gridster-item *ngFor="let data of chartData" [item]="data.item">
-          <div class="chart-container" [class.drag-handle]="canEdit()">
-            <div class="chart-header">
-              <h3>{{ data.chart.title }}</h3>
-              <span class="resize-handle" *ngIf="canEdit()">⤡</span>
-            </div>
-            <p class="chart-description" *ngIf="data.chart.description">{{ data.chart.description }}</p>
-            <div class="chart-content">
-              <ng-container [ngSwitch]="data.chart.type">
-                <app-area-chart *ngSwitchCase="'area'" [payload]="data.chart"></app-area-chart>
-                <app-bar-chart *ngSwitchCase="'bar'" [payload]="data.chart"></app-bar-chart>
-                <app-line-chart *ngSwitchCase="'line'" [payload]="data.chart"></app-line-chart>
-                <app-pie-chart *ngSwitchCase="'pie'" [payload]="data.chart"></app-pie-chart>
-                <app-donut-chart *ngSwitchCase="'donut'" [payload]="data.chart"></app-donut-chart>
-                <app-radar-chart *ngSwitchCase="'radar'" [payload]="data.chart"></app-radar-chart>
-                <app-heatmap-chart *ngSwitchCase="'heatmap'" [payload]="data.chart"></app-heatmap-chart>
-                <app-scatter-chart *ngSwitchCase="'scatter'" [payload]="data.chart"></app-scatter-chart>
-                <app-mixed-chart *ngSwitchCase="'mixed'" [payload]="data.chart"></app-mixed-chart>
-                <div *ngSwitchDefault>Unknown chart type: {{ data.chart.type }}</div>
-              </ng-container>
-            </div>
-          </div>
-        </gridster-item>
-      </gridster>
-    </ng-container>
+      <!-- Exit Edit Mode Button -->
+      <button 
+        class="btn-edit-exit" 
+        (click)="toggleEditMode()"
+        *ngIf="canEdit() && editMode"
+        title="Exit edit mode"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
 
-    <ng-template #noCharts>
-      <div class="no-charts-container"><p>No charts in this dashboard yet.</p></div>
-    </ng-template>
+      <button class="btn-share" (click)="openShareModal()" *ngIf="canEdit() && !editMode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="18" cy="5" r="3"></circle>
+          <circle cx="6" cy="12" r="3"></circle>
+          <circle cx="18" cy="19" r="3"></circle>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+        </svg>
+        Share
+      </button>
+    </div>
   </div>
 
-  <!-- Comments Sidebar -->
-  <div class="comments-sidebar" *ngIf="showCommentsSidebar">
-    <div class="comments-header">
-      <h3>💬 Comments ({{ comments.length }})</h3>
-    </div>
-
-    <div class="comments-scroll">
-      <div *ngIf="!commentsLoading && comments && comments.length > 0; else noComments">
-        <div *ngFor="let comment of comments" class="comment-message">
-          <div class="comment-avatar">{{ comment.username.charAt(0).toUpperCase() }}</div>
-          <div class="comment-body">
-            <div class="comment-author">
-              <strong>{{ comment.username }}</strong>
-              <span class="comment-time">{{ comment.createdAt | date:'short' }}</span>
-              <button 
-                *ngIf="comment.userId === currentUserId" 
-                class="btn-delete-comment" 
-                (click)="deleteComment(comment._id)"
-              >
-                ✕
-              </button>
-            </div>
-            <p class="comment-text">{{ comment.text }}</p>
-          </div>
-        </div>
+  <!-- Main Content -->
+  <div class="dashboard-content" [class.edit-mode]="editMode">
+    <!-- Charts Section (Left) -->
+    <div class="charts-section">
+      <div class="section-header">
+        <h2>Charts & Visualizations</h2>
+        <span class="chart-count">{{ chartData.length }} charts</span>
       </div>
-      <ng-template #noComments>
-        <div class="no-comments-yet">
-          <p *ngIf="!commentsLoading">No comments yet. Be the first!</p>
-          <p *ngIf="commentsLoading">Loading...</p>
+
+      <ng-container *ngIf="chartData.length; else noCharts">
+        <gridster [options]="options" class="gridster-wrapper">
+          <gridster-item *ngFor="let data of chartData" [item]="data.item">
+            <div class="chart-card" [class.editable]="editMode">
+              <div class="chart-card-header">
+                <div class="chart-title-section">
+                  <h3>{{ data.chart.title }}</h3>
+                  <p class="chart-desc" *ngIf="data.chart.description">{{ data.chart.description }}</p>
+                </div>
+                <div class="chart-actions" *ngIf="editMode">
+                  <span class="resize-indicator">⤡</span>
+                </div>
+              </div>
+              <div class="chart-content">
+                <ng-container [ngSwitch]="data.chart.type">
+                  <app-area-chart *ngSwitchCase="'area'" [payload]="data.chart"></app-area-chart>
+                  <app-bar-chart *ngSwitchCase="'bar'" [payload]="data.chart"></app-bar-chart>
+                  <app-line-chart *ngSwitchCase="'line'" [payload]="data.chart"></app-line-chart>
+                  <app-pie-chart *ngSwitchCase="'pie'" [payload]="data.chart"></app-pie-chart>
+                  <app-donut-chart *ngSwitchCase="'donut'" [payload]="data.chart"></app-donut-chart>
+                  <app-radar-chart *ngSwitchCase="'radar'" [payload]="data.chart"></app-radar-chart>
+                  <app-heatmap-chart *ngSwitchCase="'heatmap'" [payload]="data.chart"></app-heatmap-chart>
+                  <app-scatter-chart *ngSwitchCase="'scatter'" [payload]="data.chart"></app-scatter-chart>
+                  <app-mixed-chart *ngSwitchCase="'mixed'" [payload]="data.chart"></app-mixed-chart>
+                  <div *ngSwitchDefault class="unknown-chart">Unknown chart type: {{ data.chart.type }}</div>
+                </ng-container>
+              </div>
+            </div>
+          </gridster-item>
+        </gridster>
+      </ng-container>
+
+      <ng-template #noCharts>
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </div>
+          <p>No charts in this dashboard yet.</p>
+          <small>Add charts to get started visualizing your data</small>
         </div>
       </ng-template>
     </div>
 
-    <div class="comment-input-section">
-      <label class="input-label">Add a comment</label>
-      <div class="input-group">
-        <input 
-          type="text" 
-          [(ngModel)]="newComment" 
-          placeholder="Type something..."
-          class="comment-input"
-          (keyup.enter)="addComment()"
-        />
-        <button class="btn-send" (click)="addComment()" [disabled]="!newComment.trim()">Send</button>
+    <!-- Comments Section (Right) -->
+    <div class="comments-panel">
+      <div class="panel-header">
+        <h2>
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+          Comments
+        </h2>
+        <span class="comment-count">{{ comments.length }}</span>
+      </div>
+
+      <div class="comments-list">
+        <div *ngIf="!commentsLoading && comments && comments.length > 0; else noComments">
+          <div *ngFor="let comment of comments" class="comment-item">
+            <div class="comment-avatar">
+              {{ comment.username.charAt(0).toUpperCase() }}
+            </div>
+            <div class="comment-content">
+              <div class="comment-header">
+                <strong class="comment-author">{{ comment.username }}</strong>
+                <span class="comment-time">{{ comment.createdAt | date:'short' }}</span>
+              </div>
+              <p class="comment-text">{{ comment.text }}</p>
+              <button 
+                *ngIf="comment.userId === currentUserId" 
+                class="btn-delete-comment"
+                (click)="deleteComment(comment._id)"
+              >
+                ✕ Delete
+              </button>
+            </div>
+          </div>
+        </div>
+        <ng-template #noComments>
+          <div class="empty-comments">
+            <p *ngIf="!commentsLoading">No comments yet. Be the first!</p>
+            <p *ngIf="commentsLoading">Loading comments...</p>
+          </div>
+        </ng-template>
+      </div>
+
+      <div class="comment-input-box">
+        <label class="input-label">Add a comment</label>
+        <div class="input-wrapper">
+          <input 
+            type="text" 
+            [(ngModel)]="newComment" 
+            placeholder="Share your thoughts..."
+            class="comment-input"
+            (keyup.enter)="addComment()"
+          />
+          <button 
+            class="btn-send" 
+            (click)="addComment()" 
+            [disabled]="!newComment.trim()"
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M16.6915026,12.4744748 L3.50612381,13.2599618 C3.19218622,13.2599618 3.03521743,13.4170592 3.03521743,13.5741566 L1.15159189,20.0151496 C0.8376543,20.8006365 0.99,21.89 1.77946707,22.52 C2.41,22.99 3.50612381,23.1 4.13399899,22.8429026 L21.714504,14.0454487 C22.6563168,13.5741566 23.1272231,12.6315722 22.9702544,11.6889879 L4.13399899,1.16201042 C3.34915502,0.9049130 2.40734225,1.01621721 1.77946707,1.4875093 C0.994623095,2.11602989 0.837654326,3.20738225 1.15159189,3.99284922 L3.03521743,10.4338422 C3.03521743,10.5909396 3.34915502,10.7480371 3.50612381,10.7480371 L16.6915026,11.5335241 C16.6915026,11.5335241 17.1624089,11.5335241 17.1624089,12.0048162 C17.1624089,12.4744748 16.6915026,12.4744748 16.6915026,12.4744748 Z"></path>
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -126,7 +205,7 @@
 
         <div class="form-group">
           <label>Permission Level</label>
-          <select [(ngModel)]="sharePermission">
+          <select [(ngModel)]="sharePermission" class="share-select">
             <option value="view">View only</option>
             <option value="edit">Can edit</option>
             <option value="admin">Full access</option>
@@ -135,7 +214,7 @@
 
         <div class="modal-actions">
           <button class="btn-cancel" (click)="closeShareModal()">Cancel</button>
-          <button class="btn-share" (click)="confirmShare()" [disabled]="!targetUsernameOrId.trim()">
+          <button class="btn-share-confirm" (click)="confirmShare()" [disabled]="!targetUsernameOrId.trim()">
             Share Dashboard
           </button>
         </div>

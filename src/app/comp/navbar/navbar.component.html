@@ -1,56 +1,94 @@
-<nav class="navbar">
-  <div class="navbar-logo">
-    <a routerLink="/home">📊 QueryLens</a>
+<aside class="sidebar">
+  <!-- Logo Section -->
+  <div class="sidebar-logo">
+    <a routerLink="/home" class="logo-link">
+      <span class="logo-icon">◐</span>
+      <span class="logo-text">QueryLens</span>
+    </a>
   </div>
 
-  <!-- Animated Hamburger Icon -->
-  <button class="menu-toggle" (click)="toggleMenu()">
-    <span [class.open]="menuOpen"></span>
-    <span [class.open]="menuOpen"></span>
-    <span [class.open]="menuOpen"></span>
-  </button>
-
-  <ul class="navbar-links" [class.open]="menuOpen">
-    @if (isLoggedIn) {
-      <li class="user-info">
-        <span>{{ currentUsername }}</span>
-      </li>
-    }
-
-    <li><a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">{{ 'NAV.HOME' | translate }}</a></li>
+  <!-- Management Section -->
+  <div class="sidebar-section" *ngIf="isLoggedIn">
+    <h3 class="section-title">Management</h3>
     
-    @if (isLoggedIn) {
-      <li><a routerLink="/listDashboard" routerLinkActive="active">{{ 'NAV.LIST_DASHBOARD' | translate }}</a></li>
-      <li><a routerLink="/createDashboard" routerLinkActive="active">{{ 'NAV.CREATE_DASHBOARD' | translate }}</a></li>
-      <li><a routerLink="/buildQuery" routerLinkActive="active">{{ 'BUILDQUERY.BUILDQUERY' | translate }}</a></li>
-    }
-
-    <li>
-      <button class="theme-btn" (click)="toggleTheme()">
-        {{ (isDark ? 'THEME.LIGHT' : 'THEME.DARK') | translate }}
-      </button>
-    </li>
-
-    <li>
-      <select (change)="onLanguageChange($event)" [value]="currentLang">        
-        <option value="en">{{ 'LANG.ENGLISH' | translate }}</option>
-        <option value="fr">{{ 'LANG.FRENCH' | translate }}</option>
-        <option value="ar">{{ 'LANG.ARABIC' | translate }}</option>
-      </select>
-    </li>
-
-    @if (isLoggedIn) {
+    <ul class="sidebar-menu">
       <li>
-        <button class="logout-btn" (click)="logout()">
-          {{ 'NAV.LOGOUT' | translate }}
-        </button>
-      </li>
-    } @else {
-      <li>
-        <a routerLink="/login" class="login-link">
-          {{ 'NAV.LOGIN' | translate }}
+        <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="menu-item">
+          <svg class="menu-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+          <span class="menu-text">{{ 'NAV.HOME' | translate }}</span>
         </a>
       </li>
-    }
-  </ul>
-</nav>
+      
+      <li>
+        <a routerLink="/listDashboard" routerLinkActive="active" class="menu-item">
+          <svg class="menu-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5.04-6.71l-2.75 3.54-2.16-2.66c-.44-.53-1.25-.53-1.69 0-.44.54-.44 1.39 0 1.93l3 3.67c.42.52 1.24.52 1.66 0L20.07 9c.44-.54.44-1.39 0-1.93-.44-.53-1.25-.53-1.69 0l-3.02 3.71z"/></svg>
+          <span class="menu-text">{{ 'NAV.LIST_DASHBOARD' | translate }}</span>
+        </a>
+      </li>
+      
+      <li>
+        <a routerLink="/createDashboard" routerLinkActive="active" class="menu-item">
+          <svg class="menu-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          <span class="menu-text">{{ 'NAV.CREATE_DASHBOARD' | translate }}</span>
+        </a>
+      </li>
+      
+      <li>
+        <a routerLink="/buildQuery" routerLinkActive="active" class="menu-item">
+          <svg class="menu-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.62l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.09-.47 0-.59.22L2.74 8.87c-.12.21-.08.48.12.62l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.62l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.48-.12-.62l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+          <span class="menu-text">{{ 'BUILDQUERY.BUILDQUERY' | translate }}</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Personal Section -->
+  <div class="sidebar-section">
+    <h3 class="section-title">Personal</h3>
+    
+    <ul class="sidebar-menu">
+      <li>
+        <button class="menu-item theme-btn" (click)="toggleTheme()">
+          <svg class="menu-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 18C8.68629 18 6 15.3137 6 12C6 8.68629 8.68629 6 12 6C15.3137 6 18 8.68629 18 12C18 15.3137 15.3137 18 12 18ZM12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16ZM11 1H13V4H11V1ZM11 20H13V23H11V20ZM3.51472 4.92893L4.92893 3.51472L7.05025 5.63604L5.63604 7.05025L3.51472 4.92893ZM16.9497 18.364L18.364 16.9497L20.4853 19.0711L19.0711 20.4853L16.9497 18.364ZM19.0711 3.51472L20.4853 4.92893L18.364 7.05025L16.9497 5.63604L19.0711 3.51472ZM5.63604 16.9497L7.05025 18.364L4.92893 20.4853L3.51472 19.0711L5.63604 16.9497ZM23 11V13H20V11H23ZM4 11V13H1V11H4Z"/></svg>
+          <span class="menu-text">{{ (isDark ? 'Light Mode' : 'Dark Mode') }}</span>
+        </button>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Settings Section (Bottom) -->
+  <div class="sidebar-section sidebar-bottom">
+    <ul class="sidebar-menu">
+      <li>
+        <select class="menu-item language-select" (change)="onLanguageChange($event)" [value]="currentLang">        
+          <option value="en">{{ 'LANG.ENGLISH' | translate }}</option>
+          <option value="fr">{{ 'LANG.FRENCH' | translate }}</option>
+          <option value="ar">{{ 'LANG.ARABIC' | translate }}</option>
+        </select>
+      </li>
+
+      <li *ngIf="isLoggedIn">
+        <span class="menu-item user-info">
+          <span class="user-avatar">{{ currentUsername?.charAt(0)?.toUpperCase() || 'U' }}</span>
+          <span class="menu-text">{{ currentUsername }}</span>
+        </span>
+      </li>
+
+      @if (isLoggedIn) {
+        <li>
+          <button class="menu-item logout-btn" (click)="logout()">
+            <svg class="menu-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M5 21q-.825 0-1.412-.587Q3 19.825 3 19V5q0-.825.588-1.412Q4.175 3 5 3h7v2H5v14h7v2Zm11-4l-1.375-1.4q-.275-.275-.275-.7q0-.425.275-.7L16 12.4l-1.4-1.375q-.275-.275-.275-.7q0-.425.275-.7Q14.85 9 15.275 9q.425 0 .7.275L17.375 11l1.4-1.375q.275-.275.7-.275q.425 0 .7.275q.275.275.275.7q0 .425-.275.7L18.4 12l1.375 1.4q.275.275.275.7q0 .425-.275.7Q19.85 15 19.425 15q-.425 0-.7-.275L17.375 13l-1.4 1.375q-.275.275-.7.275q-.425 0-.7-.275q-.275-.275-.275-.7q0-.425.275-.7Z"/></svg>
+            <span class="menu-text">{{ 'NAV.LOGOUT' | translate }}</span>
+          </button>
+        </li>
+      } @else {
+        <li>
+          <a routerLink="/login" class="menu-item login-link">
+            <svg class="menu-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 11h-4v-2h4V8l4 4-4 4v-3z"/></svg>
+            <span class="menu-text">{{ 'NAV.LOGIN' | translate }}</span>
+          </a>
+        </li>
+      }
+    </ul>
+  </div>
+</aside>

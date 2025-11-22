@@ -1,47 +1,117 @@
 <div class="dashboard-list-container" *ngIf="!isLoading; else loading">
-  <h1>Dashboards</h1>
+  <div class="dashboards-header">
+    <h1>Dashboards</h1>
+    <p class="subtitle">We've found {{ totalDashboards }} dashboards</p>
+  </div>
+
+  <!-- Search and Filters -->
+  <div class="search-filter-section">
+    <div class="search-box">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.35-4.35"></path>
+      </svg>
+      <input 
+        type="text" 
+        placeholder="Search dashboards by name or description..."
+        [(ngModel)]="searchQuery"
+        (keyup)="filterDashboards()"
+      >
+    </div>
+    <button class="filter-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <line x1="4" y1="6" x2="20" y2="6"></line>
+        <line x1="4" y1="12" x2="20" y2="12"></line>
+        <line x1="4" y1="18" x2="20" y2="18"></line>
+      </svg>
+    </button>
+  </div>
 
   <!-- Owned Dashboards Section -->
-  <section class="dashboards-section" *ngIf="ownedDashboards.length > 0">
-    <h2>My Dashboards</h2>
-    <div class="dashboards-grid">
-      <div *ngFor="let db of ownedDashboards" class="dashboard-card" (click)="openDashboard(db)">
-        <div class="card-header">
-          <h3>{{ db.name }}</h3>
-          <span class="badge owner-badge">Owner</span>
+  <section class="dashboards-section" *ngIf="filteredOwnedDashboards.length > 0">
+    <h2 class="section-title">My Dashboards</h2>
+    <div class="dashboards-list">
+      <div 
+        *ngFor="let db of filteredOwnedDashboards" 
+        class="dashboard-item owned-item"
+        (click)="openDashboard(db)"
+      >
+        <div class="item-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
         </div>
-        <p class="card-description">{{ db.description || 'No description' }}</p>
-        <small class="card-date">Created: {{ db.createdAt | date:'short' }}</small>
+        <div class="item-content">
+          <h3>{{ db.name }}</h3>
+          <p class="item-description">{{ db.description || 'No description' }}</p>
+        </div>
+        <div class="item-meta">
+          <span class="badge owner-badge">Owner</span>
+          <small class="item-date">{{ db.createdAt | date:'short' }}</small>
+        </div>
+        <div class="item-action">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- Shared Dashboards Section -->
   <section class="dashboards-section" *ngIf="sharedDashboards.length > 0">
-    <h2>Shared With Me</h2>
-    <div class="dashboards-grid">
-      <div *ngFor="let db of sharedDashboards" class="dashboard-card shared-card" (click)="openDashboard(db)">
-        <div class="card-header">
+    <h2 class="section-title">Shared With Me</h2>
+    <div class="dashboards-list">
+      <div 
+        *ngFor="let db of filteredSharedDashboards" 
+        class="dashboard-item shared-item"
+        (click)="openDashboard(db)"
+      >
+        <div class="item-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2z"></path>
+            <polyline points="16 11 12 7 8 11"></polyline>
+            <line x1="12" y1="7" x2="12" y2="21"></line>
+          </svg>
+        </div>
+        <div class="item-content">
           <h3>{{ db.name }}</h3>
+          <p class="item-description">{{ db.description || 'No description' }}</p>
+          <p class="item-owner">Shared by: <strong>{{ db.ownerName }}</strong></p>
+        </div>
+        <div class="item-meta">
           <span class="badge shared-badge">
             {{ getDashboardPermission(db, authService.getCurrentUser()?._id || '') }}
           </span>
+          <small class="item-date">{{ db.createdAt | date:'short' }}</small>
         </div>
-        <p class="card-description">{{ db.description || 'No description' }}</p>
-        <p class="card-owner">Shared by: <strong>{{ db.ownerName }}</strong></p>
-        <small class="card-date">Created: {{ db.createdAt | date:'short' }}</small>
+        <div class="item-action">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- No Dashboards -->
-  <div class="no-data-container" *ngIf="dashboards.length === 0">
+  <div class="no-data-container" *ngIf="filteredOwnedDashboards.length === 0 && filteredSharedDashboards.length === 0">
+    <div class="no-data-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+        <polyline points="13 2 13 9 20 9"></polyline>
+      </svg>
+    </div>
     <p>No dashboards found. Create one to get started!</p>
   </div>
 </div>
 
 <ng-template #loading>
   <div class="loading-container">
+    <div class="spinner"></div>
     <p>Loading dashboards...</p>
   </div>
 </ng-template>

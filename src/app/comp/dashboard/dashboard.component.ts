@@ -77,6 +77,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
   currentUsername = '';
   showCommentsSidebar = true;
   commentsLoading = false;
+  editMode = false;
+
+toggleEditMode() {
+  this.editMode = !this.editMode;
+  this.cdr.markForCheck();
+}
 
   private destroy$ = new Subject<void>();
 
@@ -104,6 +110,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
       this.initializeGridster();
       this.loadChartsFromQueries();
+        this.loadSavedLayout();
+
       this.loadComments();
     } else {
       const id = this.route.snapshot.paramMap.get('id');
@@ -112,6 +120,51 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
     this.cdr.markForCheck();
   }
+
+loadSavedLayout() {
+  if (!this.dashboardData?._id) return;
+  
+  const saved = localStorage.getItem(`dashboard-layout-${this.dashboardData._id}`);
+  if (saved) {
+    try {
+      const layout = JSON.parse(saved);
+      this.chartData.forEach((data, index) => {
+        if (layout[index]) {
+          data.item.x = layout[index].x;
+          data.item.y = layout[index].y;
+          data.item.cols = layout[index].cols;
+          data.item.rows = layout[index].rows;
+        }
+      });
+    } catch (e) {
+      console.error('Failed to load layout:', e);
+    }
+  }
+}
+
+onItemChange() {
+  this.ngZone.runOutsideAngular(() => {
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+      this.saveLayoutToLocalStorage();
+    }, 100);
+  });
+}
+
+saveLayoutToLocalStorage() {
+  if (!this.dashboardData?._id) return;
+  
+  const layout = this.chartData.map(data => ({
+    x: data.item.x,
+    y: data.item.y,
+    cols: data.item.cols,
+    rows: data.item.rows
+  }));
+  
+  localStorage.setItem(`dashboard-layout-${this.dashboardData._id}`, JSON.stringify(layout));
+}
+
+
 
   private initializeGridster() {
     const canEdit = this.canEdit();
@@ -122,7 +175,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       outerMargin: true,
       outerMarginTop: 15,
       outerMarginRight: 15,
-      outerMarginBottom: 15,
+      outerMarginBottom: 0,
       outerMarginLeft: 15,
       useTransformOnContainer: true,
       mobileBreakpoint: 640,
@@ -364,14 +417,6 @@ confirmShare() {
       default:
         return 'View Only';
     }
-  }
-
-  onItemChange() {
-    this.ngZone.runOutsideAngular(() => {
-      setTimeout(() => {
-        window.dispatchEvent(new Event('resize'));
-      }, 100);
-    });
   }
 
   ngOnDestroy() {

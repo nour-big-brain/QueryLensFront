@@ -1,14 +1,64 @@
-<div class="welcome-banner">
-  <!-- Background video -->
+<!-- <div class="welcome-banner">
+
   <video autoplay muted loop playsinline class="background-video" >
     <source src="assets/bg.mp4" type="video/mp4">
   </video>
 
-  <!-- Overlay for text -->
   <div class="overlay">
     <div class="welcome-content">
       <h1>{{ 'HOME.WELCOME_MESSAGE1' | translate }}<span>{{ 'HOME.WELCOME_MESSAGE2' | translate }}</span></h1>
       <p>{{ 'HOME.DESCRIPTION' | translate }}</p>
     </div>
   </div>
-</div>
+</div> -->
+<div class="welcome-container">
+        <!-- Subtle SVG Background with Purple & Blue Accents -->
+        <div class="svg-background">
+            <svg preserveAspectRatio="xMidYMid slice" viewBox="0 0 1440 900" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="subtleGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:0.06" />
+                        <stop offset="100%" style="stop-color:#6366f1;stop-opacity:0.04" />
+                    </linearGradient>
+                    <linearGradient id="subtleGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#6366f1;stop-opacity:0.05" />
+                        <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:0.03" />
+                    </linearGradient>
+                </defs>
+
+                <!-- Top left decorative curves -->
+                <circle cx="100" cy="100" r="200" fill="url(#subtleGrad1)" />
+                <circle cx="150" cy="80" r="150" fill="url(#subtleGrad2)" opacity="0.5" />
+
+                <!-- Top right decorative curves -->
+                <circle cx="1340" cy="120" r="220" fill="url(#subtleGrad2)" />
+                <circle cx="1300" cy="100" r="160" fill="url(#subtleGrad1)" opacity="0.6" />
+
+                <!-- Bottom left decorative curves -->
+                <circle cx="80" cy="850" r="240" fill="url(#subtleGrad2)" />
+                <circle cx="150" cy="820" r="180" fill="url(#subtleGrad1)" opacity="0.5" />
+
+                <!-- Bottom right decorative curves -->
+                <circle cx="1360" cy="850" r="200" fill="url(#subtleGrad1)" />
+                <circle cx="1300" cy="880" r="170" fill="url(#subtleGrad2)" opacity="0.6" />
+
+                <!-- Center subtle wave line -->
+                <path d="M 0 450 Q 360 420, 720 450 T 1440 450" stroke="#7c3aed" stroke-width="1" fill="none" opacity="0.08" />
+                <path d="M 0 470 Q 360 500, 720 470 T 1440 470" stroke="#6366f1" stroke-width="0.8" fill="none" opacity="0.06" />
+
+                <!-- Diagonal subtle lines -->
+                <line x1="0" y1="0" x2="400" y2="400" stroke="#7c3aed" stroke-width="1" opacity="0.04" />
+                <line x1="1440" y1="0" x2="1040" y2="400" stroke="#6366f1" stroke-width="1" opacity="0.04" />
+                <line x1="0" y1="900" x2="400" y2="500" stroke="#6366f1" stroke-width="0.8" opacity="0.03" />
+                <line x1="1440" y1="900" x2="1040" y2="500" stroke="#7c3aed" stroke-width="0.8" opacity="0.03" />
+            </svg>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <h1>Welcome</h1>
+            <h2>To QueryLens</h2>
+            <p>Transform your raw data into beautiful, actionable insights. Build powerful dashboards without writing a single line of SQL. Create, share, and collaborate with your team instantly.</p>
+            <button class="cta-button">Get Started</button>
+        </div>
+    </div>

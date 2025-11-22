@@ -4,13 +4,14 @@ import { AuthService } from '../../services/auth.service';
 import { Dashboard } from '../../models/dashboard';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { forkJoin, Subject } from 'rxjs';
-import { takeUntil, filter,  } from 'rxjs/operators';
+import { takeUntil, filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-list-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './list-dashboard.component.html',
   styleUrl: './list-dashboard.component.css'
 })
@@ -18,10 +19,15 @@ export class ListDashboardComponent implements OnInit, OnDestroy {
   dashboards: Dashboard[] = [];
   ownedDashboards: Dashboard[] = [];
   sharedDashboards: Dashboard[] = [];
+  filteredOwnedDashboards: Dashboard[] = [];
+  filteredSharedDashboards: Dashboard[] = [];
+  
   isLoading = false;
   error: string | null = null;
+  searchQuery: string = '';
+  totalDashboards: number = 0;
+  
   private destroy$ = new Subject<void>();
-
 
   constructor(
     private dashboardService: DashboardService,
@@ -73,6 +79,11 @@ export class ListDashboardComponent implements OnInit, OnDestroy {
           ...this.sharedDashboards
         ];
         
+        // Initialize filtered arrays
+        this.filteredOwnedDashboards = [...this.ownedDashboards];
+        this.filteredSharedDashboards = [...this.sharedDashboards];
+        this.updateTotalCount();
+        
         console.log('Owned dashboards:', this.ownedDashboards.length);
         console.log('Shared dashboards:', this.sharedDashboards.length);
         console.log('Total dashboards:', this.dashboards.length);
@@ -85,6 +96,78 @@ export class ListDashboardComponent implements OnInit, OnDestroy {
         this.isLoading = false;
       }
     });
+  }
+
+  /**
+   * Filter dashboards based on search query
+   * Searches through name, description, and owner name
+   */
+  filterDashboards(): void {
+    const query = this.searchQuery.toLowerCase().trim();
+
+    if (!query) {
+      // Reset to original lists if search is empty
+      this.filteredOwnedDashboards = [...this.ownedDashboards];
+      this.filteredSharedDashboards = [...this.sharedDashboards];
+      this.updateTotalCount();
+      return;
+    }
+
+    // Filter owned dashboards
+    this.filteredOwnedDashboards = this.ownedDashboards.filter(db =>
+      this.matchesQuery(db, query)
+    );
+
+    // Filter shared dashboards
+    this.filteredSharedDashboards = this.sharedDashboards.filter(db =>
+      this.matchesQuery(db, query)
+    );
+
+    this.updateTotalCount();
+  }
+
+  /**
+   * Check if a dashboard matches the search query
+   * @param dashboard Dashboard to check
+   * @param query Search query
+   * @returns true if dashboard matches query
+   */
+  private matchesQuery(dashboard: Dashboard, query: string): boolean {
+    const name = dashboard.name.toLowerCase();
+    const description = (dashboard.description || '').toLowerCase();
+    
+    return (
+      name.includes(query) ||
+      description.includes(query)
+    );
+  }
+
+  /**
+   * Update total dashboard count based on filtered results
+   */
+  private updateTotalCount(): void {
+    this.totalDashboards =
+      this.filteredOwnedDashboards.length +
+      this.filteredSharedDashboards.length;
+  }
+
+  /**
+   * Clear search filter and reset to original lists
+   */
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.filterDashboards();
+  }
+
+  /**
+   * Refresh dashboards list
+   */
+  refreshDashboards(): void {
+    this.clearSearch();
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser && currentUser._id) {
+      this.loadAllDashboards(currentUser._id);
+    }
   }
 
   openDashboard(dashboard: Dashboard) {

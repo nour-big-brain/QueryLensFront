@@ -39,7 +39,7 @@ export class LoginComponent {
       next: () => {
         this.loading = false;
         this.success = 'Login successful! Redirecting...';
-        setTimeout(() => this.router.navigate(['/dashboard']), 1000);
+        setTimeout(() => this.router.navigate(['/listDashboard']), 1000);
       },
       error: (err) => {
         this.loading = false;

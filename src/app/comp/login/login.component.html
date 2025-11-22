@@ -1,71 +1,87 @@
-<div class="create-page-wrapper">
-  <div class="dashboard-form-card">
-    <h2>Welcome Back</h2>
+<div class="page-background">
+  <div class="login-card">
+    <!-- Left Side - Image Placeholder -->
+    <div class="left-side">
+      <img [src]="'./assets/tel.jpg'" alt="Welcome Back" class="welcome-image" />
+    </div>
 
-    @if (error) {
-      <div class="alert alert-error">{{ error }}</div>
-    }
-    @if (success) {
-      <div class="alert alert-success">{{ success }}</div>
-    }
+    <!-- Right Side - Form -->
+    <div class="right-side">
+      <div class="form-container">
+        <h2 class="login-title">Login</h2>
+        <p class="login-subtitle">Welcome back! Please login to your account.</p>
 
-    <form (ngSubmit)="onLogin()">
-      <!-- Username or Email -->
-      <div class="form-group">
-        <label for="username">Username or Email <span class="required">*</span></label>
-        <input
-          id="username"
-          type="text"
-          [(ngModel)]="loginForm.username"
-          name="username"
-          placeholder="Enter your username or email"
-          required
-          autocomplete="username"
-        />
+        <!-- Error Alert -->
+        @if (error) {
+          <div class="alert alert-error">
+            <span class="alert-message">{{ error }}</span>
+          </div>
+        }
+
+        <!-- Success Alert -->
+        @if (success) {
+          <div class="alert alert-success">
+            <span class="alert-message">{{ success }}</span>
+          </div>
+        }
+
+        <form (ngSubmit)="onLogin()" class="login-form">
+          <!-- Username Field -->
+          <div class="form-group">
+            <label for="username" class="form-label">User Name</label>
+            <input
+              id="username"
+              type="text"
+              class="form-input"
+              [(ngModel)]="loginForm.username"
+              name="username"
+              placeholder="username@gmail.com"
+              autocomplete="username"
+              required
+            />
+          </div>
+
+          <!-- Password Field -->
+          <div class="form-group">
+            <label for="password" class="form-label">Password</label>
+            <input
+              id="password"
+              type="password"
+              class="form-input"
+              [(ngModel)]="loginForm.password"
+              name="password"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              required
+            />
+          </div>
+
+          <!-- Remember Me & Forgot Password -->
+          <div class="form-options">
+            <label class="remember-me">
+              <input 
+                type="checkbox" 
+                class="checkbox-input" 
+                [(ngModel)]="loginForm.rememberMe"
+                name="rememberMe"
+              />
+              <span class="checkbox-label">Remember Me</span>
+            </label>
+            <a href="#" class="forgot-password">Forgot Password?</a>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="btn-login" [disabled]="loading">
+            {{ loading ? 'Signing in...' : 'Login' }}
+          </button>
+
+          <!-- Sign Up Link -->
+          <div class="signup-prompt">
+            <span>New User?</span>
+            <a routerLink="/signup" class="signup-link">Signup</a>
+          </div>
+        </form>
       </div>
-
-      <!-- Password -->
-      <div class="form-group">
-        <label for="password">Password <span class="required">*</span></label>
-        <input
-          id="password"
-          type="password"
-          [(ngModel)]="loginForm.password"
-          name="password"
-          placeholder="Enter your password"
-          required
-          autocomplete="current-password"
-        />
-      </div>
-
-      <!-- Remember Me + Forgot Password -->
-      <div class="form-group" style="flex-direction: row; justify-content: space-between; margin-bottom: 25px;">
-        <label style="margin: 0; cursor: pointer;">
-          <input type="checkbox" [(ngModel)]="loginForm.rememberMe" name="rememberMe" style="margin-right: 8px;" />
-          Remember me
-        </label>
-        <a href="#" style="color: var(--accent-color); font-size: 13px; text-decoration: none;">
-          Forgot password?
-        </a>
-      </div>
-
-      <!-- Submit Button -->
-      <div class="form-actions">
-        <button type="submit" class="btn-create" [disabled]="loading">
-          @if (loading) {
-            <span class="spinner"></span>
-          }
-          {{ loading ? 'Signing in...' : 'Sign In' }}
-        </button>
-      </div>
-
-      <!-- Sign Up Link -->
-      <div style="text-align: center; margin-top: 30px; color: var(--text-color); font-size: 14px;">
-        Don't have an account?
-        <a routerLink="/signup" style="color: var(--accent-color); font-weight: 600; text-decoration: none;">
-          Sign up here
-        </a>
-      </div>
-    </form>
+    </div>
   </div>
 </div>

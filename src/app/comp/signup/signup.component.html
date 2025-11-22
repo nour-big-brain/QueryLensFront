@@ -1,119 +1,137 @@
-<div class="create-page-wrapper">
-  <div class="dashboard-form-card">
-    <h2>Create Your Account</h2>
 
-    @if (error) {
-      <div class="alert alert-error">{{ error }}</div>
-    }
-    @if (success) {
-      <div class="alert alert-success">
-        {{ success }} <br />
-        <a routerLink="/login" style="color: var(--accent-color); text-decoration: underline;">Click here to sign in</a>
-      </div>
-    }
+<div class="page-background">
+  <div class="login-card">
+    <!-- Left Side - Form -->
+    <div class="left-side">
+      <div class="form-container">
+        <h2 class="login-title">Create Account</h2>
+        <p class="login-subtitle">Join us today! Create your account to get started.</p>
+        
+        <!-- Error Alert -->
+        <div id="errorAlert" class="alert alert-error" style="display: none;">
+          <span id="errorMessage"></span>
+        </div>
+        
+        <!-- Success Alert -->
+        <div id="successAlert" class="alert alert-success" style="display: none;">
+          <span id="successMessage"></span>
+          <br />
+          <a href="#login" style="color: #388e3c; text-decoration: underline;">Click here to sign in</a>
+        </div>
 
-    <form (ngSubmit)="onSignup()" [class.was-validated]="submitted">
-      <!-- Username -->
-      <div class="form-group">
-        <label for="reg-username">Username <span class="required">*</span></label>
-        <input
-          id="reg-username"
-          type="text"
-          [(ngModel)]="signupForm.username"
-          name="username"
-          placeholder="Choose a unique username"
-          required
-          minlength="3"
-          maxlength="20"
-        />
-        @if (submitted && !signupForm.username) {
-          <small class="error-text">Username is required</small>
-        }
-      </div>
+        <form id="signupForm" class="signup-form" (ngSubmit)="onSignup()" [class.was-validated]="submitted">
+          <!-- Username -->
+          <div class="form-group">
+            <label for="reg-username" class="form-label">Username <span class="required">*</span></label>
+            <input
+              id="reg-username"
+              type="text"
+              class="form-input"
+              [(ngModel)]="signupForm.username"
+              name="username"
+              placeholder="Choose a unique username"
+              required
+              minlength="3"
+              maxlength="20"
+            />
+            @if (submitted && !signupForm.username) {
+              <small class="error-text">Username is required</small>
+            }
+          </div>
 
-      <!-- Email -->
-      <div class="form-group">
-        <label for="reg-email">Email Address <span class="required">*</span></label>
-        <input
-          id="reg-email"
-          type="email"
-          [(ngModel)]="signupForm.email"
-          name="email"
-          placeholder="you@example.com"
-          required
-          email
-        />
-        @if (submitted && !signupForm.email) {
-          <small class="error-text">Valid email is required</small>
-        }
-      </div>
+          <!-- Email -->
+          <div class="form-group">
+            <label for="reg-email" class="form-label">Email Address <span class="required">*</span></label>
+            <input
+              id="reg-email"
+              type="email"
+              class="form-input"
+              [(ngModel)]="signupForm.email"
+              name="email"
+              placeholder="you@example.com"
+              required
+              email
+            />
+            @if (submitted && !signupForm.email) {
+              <small class="error-text">Valid email is required</small>
+            }
+          </div>
 
-      <!-- Password -->
-      <div class="form-group">
-        <label for="reg-password">Password <span class="required">*</span></label>
-        <input
-          id="reg-password"
-          type="password"
-          [(ngModel)]="signupForm.password"
-          name="password"
-          placeholder="Create a strong password"
-          required
-          minlength="6"
-        />
-        @if (submitted && signupForm.password && signupForm.password.length < 6) {
-          <small class="error-text">Password must be at least 6 characters</small>
-        }
-      </div>
+          <!-- Password -->
+          <div class="form-group">
+            <label for="reg-password" class="form-label">Password <span class="required">*</span></label>
+            <input
+              id="reg-password"
+              type="password"
+              class="form-input"
+              [(ngModel)]="signupForm.password"
+              name="password"
+              placeholder="Create a strong password"
+              required
+              minlength="6"
+            />
+            @if (submitted && signupForm.password && signupForm.password.length < 6) {
+              <small class="error-text">Password must be at least 6 characters</small>
+            }
+          </div>
 
-      <!-- Confirm Password -->
-      <div class="form-group">
-        <label for="reg-confirm">Confirm Password <span class="required">*</span></label>
-        <input
-          id="reg-confirm"
-          type="password"
-          [(ngModel)]="signupForm.confirmPassword"
-          name="confirmPassword"
-          placeholder="Type password again"
-          required
-        />
-        @if (submitted && signupForm.password !== signupForm.confirmPassword) {
-          <small class="error-text">Passwords do not match</small>
-        }
-      </div>
+          <!-- Confirm Password -->
+          <div class="form-group">
+            <label for="reg-confirm" class="form-label">Confirm Password <span class="required">*</span></label>
+            <input
+              id="reg-confirm"
+              type="password"
+              class="form-input"
+              [(ngModel)]="signupForm.confirmPassword"
+              name="confirmPassword"
+              placeholder="Type password again"
+              required
+            />
+            @if (submitted && signupForm.password !== signupForm.confirmPassword) {
+              <small class="error-text">Passwords do not match</small>
+            }
+          </div>
 
-      <!-- Terms Checkbox -->
-      <div class="form-group" style="flex-direction: row; gap: 10px; margin-bottom: 25px;">
-        <input
-          type="checkbox"
-          [(ngModel)]="signupForm.agreeTerms"
-          name="agreeTerms"
-          id="agree-terms"
-          required
-        />
-        <label for="agree-terms" style="margin: 0; font-weight: normal; font-size: 13px;">
-          I agree to the <a href="#" style="color: var(--accent-color);">Terms of Service</a> and
-          <a href="#" style="color: var(--accent-color);">Privacy Policy</a>
-        </label>
-      </div>
+          <!-- Terms Checkbox -->
+          <div class="form-group" style="flex-direction: row; gap: 10px; margin-bottom: 25px;">
+            <input
+              type="checkbox"
+              [(ngModel)]="signupForm.agreeTerms"
+              name="agreeTerms"
+              id="agree-terms"
+              required
+            />
+            <label for="agree-terms" style="margin: 0; font-weight: normal; font-size: 13px;">
+              I agree to the <a href="#" style="color: var(--soft-periwinkle); text-decoration: underline;">Terms of Service</a> and
+              <a href="#" style="color: var(--soft-periwinkle); text-decoration: underline;">Privacy Policy</a>
+            </label>
+          </div>
 
-      <!-- Submit Button -->
-      <div class="form-actions">
-        <button type="button" class="btn-reset" (click)="onReset()">Reset</button>
-        <button type="submit" class="btn-create" [disabled]="loading || !signupForm.agreeTerms">
-          @if (loading) {
-            <span class="spinner"></span>
-          }
-          {{ loading ? 'Creating Account...' : 'Create Account' }}
-        </button>
-      </div>
+          <!-- Submit Button -->
+          <div class="form-actions">
+            <button type="button" class="btn-reset" (click)="onReset()">Reset</button>
+            <button type="submit" (click)="onSignup()" class="btn-create" [disabled]="loading || !signupForm.agreeTerms">
+              @if (loading) {
+                <span class="spinner"></span>
+              }
+              {{ loading ? 'Creating Account...' : 'Create Account' }}
+            </button>
+          </div>
 
-      <!-- Login Link -->
-      <div style="text-align: center; margin-top: 30px; color: var(--text-color); font-size: 14px;">
-        Already have an account?
-        <a routerLink="/login" style="color: var(--accent-color); font-weight: 600; text-decoration: none;">
-          Sign in here
-        </a>
+          <!-- Login Link -->
+          <div style="text-align: center; margin-top: 30px; color: #b0b0b0; font-size: 14px;">
+            Already have an account?
+            <a routerLink="/login" style="color: var(--soft-periwinkle); font-weight: 600; text-decoration: none;">
+              Sign in here
+            </a>
+          </div>
+        </form>
       </div>
-    </form>
+    </div>
+
+    <!-- Right Side - Image Placeholder -->
+    <div class="right-side">
+      <img src="/assets/tel.jpg" alt="Create Account" class="welcome-image" />
+    </div>
   </div>
 </div>
