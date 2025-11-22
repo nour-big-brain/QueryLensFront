@@ -40,7 +40,7 @@ export const routes: Routes = [
     { path: 'roles', title: 'edit', component: RolesListComponent },
     { path: 'roles/modifier/:id', title: 'modify', component: ModifierRoleComponent },
     { path: 'roles/ajouter-role', title: 'add', component: AjouterRoleComponent },
-    {path:'audit-logs', title: 'audit-logs', component: AuditLogsComponent},
+    {path:'audit-logs', title: 'audit-logs', component: AuditLogsComponent, canActivate:[authGuardGuard]},
     { path: 'dashboard/:id', title: 'dashboard', component: DashboardComponent },
     { path: 'createDashboard', title: 'create', component: CreateDashboardComponent },
     { path: 'buildQuery', title: 'form', component: BuildQueryComponent },

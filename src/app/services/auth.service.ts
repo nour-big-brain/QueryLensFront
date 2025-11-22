@@ -21,7 +21,7 @@ export interface AuthResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:5000/auth'; 
+  private apiUrl = 'http://localhost:5000/auth';
   private tokenKey = 'auth_token';
   private userSubject = new BehaviorSubject<User | null>(null);
   user$ = this.userSubject.asObservable();
@@ -31,10 +31,7 @@ export class AuthService {
   }
 
   private initializeAuth() {
-    // Try to restore token and user from localStorage
     this.loadUserFromToken();
-    
-    // If token exists but user wasn't loaded, try refreshing it
     const token = this.getToken();
     if (token && !this.userSubject.value) {
       this.refreshToken().subscribe({
