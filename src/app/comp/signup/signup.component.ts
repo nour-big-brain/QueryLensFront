@@ -63,7 +63,7 @@ export class SignupComponent {
       next: () => {
         this.loading = false;
         this.success = 'Account created successfully! You can now log in.';
-        setTimeout(() => this.router.navigate(['/login']), 3000);
+         this.router.navigate(['/home']);
       },
       error: (err) => {
         this.loading = false;

@@ -16,6 +16,7 @@ import { AuthService } from '../../services/auth.service';
 import { Dashboard } from '../../models/dashboard';
 import { Subject } from 'rxjs';
 import { takeUntil, filter } from 'rxjs/operators';
+import { Router } from '@angular/router';
 
 interface Table {
   id: number;
@@ -63,7 +64,8 @@ export class BuildQueryComponent implements OnInit, OnDestroy {
     private queryService: QueryService,
     private datasourceService: DataSourceService,
     private dashboardService: DashboardService,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {
     this.buildQueryForm = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(3)]],
@@ -377,5 +379,8 @@ export class BuildQueryComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+  navigateToCreateDataSource(){
+    this.router.navigate(['/data-source']);
   }
 }

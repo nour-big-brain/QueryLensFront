@@ -11,6 +11,74 @@
   --purple-accent: #7c3aed;
   --blue-accent: #6366f1;
 }
+/*begin add dataSource button styles*/
+.plusButton {
+  /* Config start */
+  --plus_sideLength: 2.5rem;
+  --plus_topRightTriangleSideLength: 0.9rem;
+  /* Config end */
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: var(--plus_sideLength);
+  height: var(--plus_sideLength);
+  border: 1.5px solid var(--secondary);
+  background-color: var(--tertiary);
+  box-shadow: var(--shadow);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+
+
+.plusButton::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: var(--plus_topRightTriangleSideLength);
+  height: var(--plus_topRightTriangleSideLength);
+  background: #6366f1; /* Direct color for visible test */
+  clip-path: polygon(100% 0, 0 0, 100% 100%);
+  opacity: 0;
+  transition: 
+    width 0.2s ease-in-out,
+    height 0.2s ease-in-out,
+    opacity 0.2s ease-in-out;
+  z-index: 0;
+}
+.plusButton:hover::before,
+.plusButton:focus-visible::before {
+  width: calc(var(--plus_sideLength) * 2);
+  height: calc(var(--plus_sideLength) * 2);
+  opacity: 1;
+}
+
+/* Optional: Make sure .plusButton position is relative and its children have higher z-index if needed */
+.plusButton > .plusIcon {
+  position: relative;
+  z-index: 1;
+  transform-origin: 50% 50%;
+  transition: fill 0.3s ease, transform 0.3s ease;
+}
+
+
+.plusButton:hover > .plusIcon {
+  fill: var(--tertiary);
+  transform: rotate(180deg);
+}
+
+.plusButton:focus-visible > .plusIcon {
+  fill: var(--tertiary);
+  transform: rotate(180deg);
+}
+
+
+/*end add dataSource button styles*/
+
+
 
 .create-page-wrapper {
   min-height: 100vh;
