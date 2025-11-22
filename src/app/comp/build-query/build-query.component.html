@@ -110,7 +110,24 @@
         </div>
       </div>
 
-      <!-- Table Dropdown -->
+      <!-- Query Type -->
+      <div class="form-group">
+        <label for="type">Query Type <span class="required">*</span></label>
+        <select
+          id="type"
+          formControlName="type"
+          [class.is-invalid]="
+            buildQueryForm.get('type')?.invalid &&
+            buildQueryForm.get('type')?.touched
+          "
+        >
+          <option value="builder">Builder</option>
+          <option value="native">Native SQL</option>
+        </select>
+      </div>
+
+      <!-- BUILDER MODE: Table Dropdown -->
+      @if (queryType === 'builder') {
       <div class="form-group">
         <label for="tableId">Select Table <span class="required">*</span></label>
         @if (loadingTables) {
@@ -146,22 +163,40 @@
         }
       </div>
 
-      <!-- Query Type -->
+      <!-- Aggregation (Builder only) -->
       <div class="form-group">
-        <label for="type">Query Type <span class="required">*</span></label>
-        <select
-          id="type"
-          formControlName="type"
-          [class.is-invalid]="
-            buildQueryForm.get('type')?.invalid &&
-            buildQueryForm.get('type')?.touched
-          "
-        >
-          <option value="builder">Builder</option>
-          <option value="native">Native SQL</option>
-          <option value="ai">AI Generated</option>
+        <label for="aggregation">Aggregation</label>
+        <select id="aggregation" formControlName="aggregation">
+          <option value="none">None</option>
+          <option value="count">Count</option>
+          <option value="sum">Sum</option>
+          <option value="avg">Average</option>
         </select>
       </div>
+      }
+
+      <!-- NATIVE MODE: SQL Query Input -->
+      @if (queryType === 'native') {
+      <div class="form-group">
+        <label for="sqlQuery">SQL Query <span class="required">*</span></label>
+        <textarea
+          id="sqlQuery"
+          formControlName="sqlQuery"
+          placeholder="SELECT * FROM table_name WHERE condition = ?"
+          rows="8"
+          [class.is-invalid]="
+            buildQueryForm.get('sqlQuery')?.invalid &&
+            buildQueryForm.get('sqlQuery')?.touched
+          "
+        ></textarea>
+        @if (
+          buildQueryForm.get('sqlQuery')?.invalid &&
+          buildQueryForm.get('sqlQuery')?.touched
+        ) {
+        <small class="error-text">SQL Query is required</small>
+        }
+      </div>
+      }
       
       <!-- Chart Type Selection -->
       <div class="form-group">
@@ -190,17 +225,6 @@
         ) {
         <small class="error-text">Chart Type is required</small>
         }
-      </div>
-
-      <!-- Aggregation -->
-      <div class="form-group">
-        <label for="aggregation">Aggregation</label>
-        <select id="aggregation" formControlName="aggregation">
-          <option value="none">None</option>
-          <option value="count">Count</option>
-          <option value="sum">Sum</option>
-          <option value="avg">Average</option>
-        </select>
       </div>
 
       <!-- JSON Preview -->
@@ -333,6 +357,13 @@
   <div class="info-item">
     <strong>Title:</strong>
     <span>{{ createdQuery.title }}</span>
+  </div>
+
+  <div class="info-item">
+    <strong>Type:</strong>
+    <span class="badge" [ngClass]="createdQuery.type === 'native' ? 'badge-native' : 'badge-builder'">
+      {{ createdQuery.type === 'native' ? 'SQL (Native)' : 'Builder' }}
+    </span>
   </div>
 
   <div class="info-item">

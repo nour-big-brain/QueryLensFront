@@ -13,6 +13,8 @@ import { DataSourceComponent } from './comp/data-source/data-source.component';
 import { LoginComponent } from './comp/login/login.component';
 import { SignupComponent } from './comp/signup/signup.component';
 import { authGuardGuard } from './guards/auth-guard.guard';
+import { UserProfileComponent } from './comp/user-profile/user-profile.component';
+import { UserUpdateComponent } from './comp/user-update/user-update.component';
 
 export const routes: Routes = [
     { path: 'home', title: 'Home', component: HomeComponent },
@@ -21,6 +23,8 @@ export const routes: Routes = [
     { path: 'listDashboard', title: 'listDashboard', component: ListDashboardComponent, canActivate:[authGuardGuard] },
     { path: 'login', component: LoginComponent },
     { path: 'signup', component: SignupComponent },
+    { path: 'profile', title:'Profile',component:UserProfileComponent, canActivate:[authGuardGuard]},
+    { path: 'user-update', title: 'Change credentials', component:UserUpdateComponent, canActivate:[authGuardGuard]},
     { path: 'user-management', title: 'User Management', component: UserManagementComponent,canActivate:[authGuardGuard] },
     { path: 'data-source', title: 'datasource', component: DataSourceComponent,canActivate:[authGuardGuard] },
     { path: 'roles', title: 'edit', component: RolesListComponent,canActivate:[authGuardGuard] },

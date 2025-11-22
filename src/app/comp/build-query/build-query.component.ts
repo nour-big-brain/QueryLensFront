@@ -65,7 +65,7 @@ export class BuildQueryComponent implements OnInit, OnDestroy {
     private datasourceService: DataSourceService,
     private dashboardService: DashboardService,
     private authService: AuthService,
-    private router: Router
+    private router:Router
   ) {
     this.buildQueryForm = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(3)]],
@@ -73,7 +73,8 @@ export class BuildQueryComponent implements OnInit, OnDestroy {
       dataSource: ['', Validators.required],
       type: ['builder', Validators.required],
       chartType: ['bar', Validators.required],
-      tableId: ['', Validators.required],
+      tableId: [''],
+      sqlQuery: [''],
       aggregation: ['none'],
     });
   }
@@ -98,6 +99,25 @@ export class BuildQueryComponent implements OnInit, OnDestroy {
     }
 
     this.fetchDataSources();
+    this.setupFormValueChanges();
+  }
+
+  setupFormValueChanges(): void {
+    this.buildQueryForm.get('type')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((type) => {
+        if (type === 'native') {
+          this.buildQueryForm.get('tableId')?.clearValidators();
+          this.buildQueryForm.get('tableId')?.updateValueAndValidity();
+          this.buildQueryForm.get('sqlQuery')?.setValidators([Validators.required]);
+          this.buildQueryForm.get('sqlQuery')?.updateValueAndValidity();
+        } else if (type === 'builder') {
+          this.buildQueryForm.get('tableId')?.setValidators([Validators.required]);
+          this.buildQueryForm.get('tableId')?.updateValueAndValidity();
+          this.buildQueryForm.get('sqlQuery')?.clearValidators();
+          this.buildQueryForm.get('sqlQuery')?.updateValueAndValidity();
+        }
+      });
   }
 
   fetchDataSources(): void {
@@ -170,6 +190,19 @@ export class BuildQueryComponent implements OnInit, OnDestroy {
   }
 
   generateQueryDefinition(): any {
+    const type = this.buildQueryForm.get('type')?.value;
+
+    if (type === 'native') {
+      const sqlQuery = this.buildQueryForm.get('sqlQuery')?.value;
+      if (!sqlQuery) return null;
+      return {
+        native: {
+          query: sqlQuery
+        }
+      };
+    }
+
+    // Builder type
     const tableId = this.buildQueryForm.get('tableId')?.value;
     if (!tableId) return null;
 
@@ -210,7 +243,7 @@ export class BuildQueryComponent implements OnInit, OnDestroy {
       type: formValue.type,
       chartType: formValue.chartType,
       queryDefinition: this.generateQueryDefinition(),
-      userId: this.currentUserId,  // ✅ Use userId from AuthService
+      userId: this.currentUserId,
     };
 
     this.queryService.buildQuery(buildQueryRequest).subscribe({
@@ -348,6 +381,10 @@ export class BuildQueryComponent implements OnInit, OnDestroy {
     return this.buildQueryForm.get('dataSource')?.value || null;
   }
 
+  get queryType(): string {
+    return this.buildQueryForm.get('type')?.value || 'builder';
+  }
+
   retryMetabaseSync(queryId: string): void {
     if (this.retryingQueryId === queryId) return;
 
@@ -381,6 +418,6 @@ export class BuildQueryComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
   navigateToCreateDataSource(){
-    this.router.navigate(['/data-source']);
+    this.router.navigate(['/data-source'])
   }
 }
