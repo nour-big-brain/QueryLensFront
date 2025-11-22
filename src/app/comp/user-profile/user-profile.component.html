@@ -1,0 +1,14 @@
+<div class="profile-wrapper">
+  <div class="profile-card">
+    <div class="profile-avatar">
+      {{ user?.username?.charAt(0)?.toUpperCase() || 'U' }}
+    </div>
+    <div class="profile-info">
+      <h2 class="profile-username">{{ user?.username }}</h2>
+      <p class="profile-email">{{ user?.email }}</p>
+    </div>
+    <button class="update-credentials-btn" (click)="onUpdateCredentials()">
+      Update Credentials
+    </button>
+  </div>
+</div>

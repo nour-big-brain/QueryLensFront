@@ -1,0 +1,68 @@
+<!-- In your user-update.component.html -->
+<div class="create-page-wrapper">
+  <div class="dashboard-form-card">
+    <h2>Update Username</h2>
+    <form [formGroup]="editForm">
+      <div class="form-group">
+        <label for="username">Username <span class="required">*</span></label>
+        <input
+          id="username"
+          type="text"
+          formControlName="username"
+          placeholder="Enter your new username"
+          [class.is-invalid]="editForm.get('username')?.invalid && editForm.get('username')?.dirty"/>
+        <small class="error-text" *ngIf="editForm.get('username')?.invalid && editForm.get('username')?.dirty">
+          Username est requis et doit être valide.
+        </small>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn-reset"
+          (click)="editForm.reset({ username: loggedInUser?.username || '' })">Reset</button>
+        <button type="button" class="btn-create"
+          (click)="onSubmit()" [disabled]="editForm.invalid">Modifier</button>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn-primary" (click)="showPasswordModal = true">
+          Change Password
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL POPUP (must be outside card) -->
+<div *ngIf="showPasswordModal" class="modal-overlay" (click)="closePasswordModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Change Password</h3>
+      <button class="modal-close" (click)="closePasswordModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="passwordForm">
+        <div class="form-group">
+          <label for="oldPassword">Old Password <span class="required">*</span></label>
+          <input id="oldPassword" type="password" formControlName="oldPassword"
+            [class.is-invalid]="passwordForm.get('oldPassword')?.invalid && passwordForm.get('oldPassword')?.dirty"/>
+          <small class="error-text"
+            *ngIf="passwordForm.get('oldPassword')?.invalid && passwordForm.get('oldPassword')?.dirty">
+            Old password is required
+          </small>
+        </div>
+        <div class="form-group">
+          <label for="newPassword">New Password <span class="required">*</span></label>
+          <input id="newPassword" type="password" formControlName="newPassword"
+            [class.is-invalid]="passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.dirty"/>
+          <small class="error-text"
+            *ngIf="passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.dirty">
+            New password is required (min 6 characters)
+          </small>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-reset" (click)="passwordForm.reset()">Reset</button>
+          <button type="button" class="btn-create"
+            (click)="onChangePassword()" [disabled]="passwordForm.invalid">Update Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

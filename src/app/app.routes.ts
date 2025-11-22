@@ -12,16 +12,29 @@ import { UserManagementComponent } from './comp/user-management/user-management.
 import { DataSourceComponent } from './comp/data-source/data-source.component';
 import { LoginComponent } from './comp/login/login.component';
 import { SignupComponent } from './comp/signup/signup.component';
+import { authGuardGuard } from './guards/auth-guard.guard';
+import { UserProfileComponent } from './comp/user-profile/user-profile.component';
+import { UserUpdateComponent } from './comp/user-update/user-update.component';
 import { AuditLogsComponent } from './comp/audit-log/audit-log.component';
 
 export const routes: Routes = [
     { path: 'home', title: 'Home', component: HomeComponent },
 
     //{ path: 'dashboard', title: 'Dashboard', component: DashboardComponent },
-    { path: 'listDashboard', title: 'listDashboard', component: ListDashboardComponent },
+    { path: 'listDashboard', title: 'listDashboard', component: ListDashboardComponent, canActivate:[authGuardGuard] },
     { path: 'login', component: LoginComponent },
 
     { path: 'signup', component: SignupComponent },
+    { path: 'profile', title:'Profile',component:UserProfileComponent, canActivate:[authGuardGuard]},
+    { path: 'user-update', title: 'Change credentials', component:UserUpdateComponent, canActivate:[authGuardGuard]},
+    { path: 'user-management', title: 'User Management', component: UserManagementComponent,canActivate:[authGuardGuard] },
+    { path: 'data-source', title: 'datasource', component: DataSourceComponent,canActivate:[authGuardGuard] },
+    { path: 'roles', title: 'edit', component: RolesListComponent,canActivate:[authGuardGuard] },
+    { path: 'roles/modifier/:id', title: 'modify', component: ModifierRoleComponent,canActivate:[authGuardGuard] },
+    { path: 'roles/ajouter-role', title: 'add', component: AjouterRoleComponent,canActivate:[authGuardGuard] },
+    { path: 'dashboard/:id', title: 'dashboard', component: DashboardComponent,canActivate:[authGuardGuard] },
+    { path: 'createDashboard', title: 'create', component: CreateDashboardComponent,canActivate:[authGuardGuard] },
+    { path: 'buildQuery', title: 'form', component: BuildQueryComponent,canActivate:[authGuardGuard] },
     { path: 'user-management', title: 'User Management', component: UserManagementComponent },
     { path: 'data-source', title: 'datasource', component: DataSourceComponent },
     { path: 'roles', title: 'edit', component: RolesListComponent },
