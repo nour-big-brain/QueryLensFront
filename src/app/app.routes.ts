@@ -12,6 +12,7 @@ import { UserManagementComponent } from './comp/user-management/user-management.
 import { DataSourceComponent } from './comp/data-source/data-source.component';
 import { LoginComponent } from './comp/login/login.component';
 import { SignupComponent } from './comp/signup/signup.component';
+import { AuditLogsComponent } from './comp/audit-log/audit-log.component';
 
 export const routes: Routes = [
     { path: 'home', title: 'Home', component: HomeComponent },
@@ -19,12 +20,14 @@ export const routes: Routes = [
     //{ path: 'dashboard', title: 'Dashboard', component: DashboardComponent },
     { path: 'listDashboard', title: 'listDashboard', component: ListDashboardComponent },
     { path: 'login', component: LoginComponent },
+
     { path: 'signup', component: SignupComponent },
     { path: 'user-management', title: 'User Management', component: UserManagementComponent },
     { path: 'data-source', title: 'datasource', component: DataSourceComponent },
     { path: 'roles', title: 'edit', component: RolesListComponent },
     { path: 'roles/modifier/:id', title: 'modify', component: ModifierRoleComponent },
     { path: 'roles/ajouter-role', title: 'add', component: AjouterRoleComponent },
+    {path:'audit-logs', title: 'audit-logs', component: AuditLogsComponent},
     { path: 'dashboard/:id', title: 'dashboard', component: DashboardComponent },
     { path: 'createDashboard', title: 'create', component: CreateDashboardComponent },
     { path: 'buildQuery', title: 'form', component: BuildQueryComponent },

@@ -1,0 +1,131 @@
+<div class="audit-container">
+  <div class="audit-header">
+    <h1>Audit Logs</h1>
+    <p>Monitor all administrative actions and system changes</p>
+  </div>
+
+  @if (error) {
+    <div class="alert alert-error">
+      {{ error }}
+      <button class="alert-close" (click)="error = null">×</button>
+    </div>
+  }
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <form [formGroup]="filterForm" class="filters-form">
+      <div class="filter-group">
+        <label>Filter By</label>
+        <select formControlName="filterType" class="form-select">
+          <option value="all">All Logs</option>
+          <option value="user">Target User</option>
+          <option value="admin">Admin (Performed By)</option>
+        </select>
+      </div>
+
+      @if (filterForm.get('filterType')?.value !== 'all') {
+        <div class="filter-group">
+          <label>Search</label>
+          <input 
+            type="text" 
+            formControlName="filterValue" 
+            placeholder="Username or email..."
+            class="form-input"
+          />
+        </div>
+      }
+
+      <div class="filter-group">
+        <label>Action Type</label>
+        <select formControlName="action" class="form-select">
+          <option value="">All Actions</option>
+          @for (act of actions; track act) {
+            <option [value]="act">{{ act }}</option>
+          }
+        </select>
+      </div>
+
+      <button type="button" class="btn btn-secondary" (click)="resetFilters()">
+        Reset Filters
+      </button>
+
+      <button type="button" class="btn btn-outline" (click)="exportLogs()">
+        📥 Export
+      </button>
+    </form>
+  </div>
+
+  <!-- Logs Table -->
+  @if (loading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading audit logs...</p>
+    </div>
+  } @else if (filteredLogs.length === 0) {
+    <div class="empty-state">
+      <p>No audit logs found</p>
+    </div>
+  } @else {
+    <div class="logs-section">
+      <div class="logs-count">
+        Showing {{ filteredLogs.length }} of {{ auditLogs.length }} logs
+      </div>
+
+      <div class="logs-table-wrapper">
+        <table class="logs-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Action</th>
+              <th>Target User</th>
+              <th>Performed By</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (log of filteredLogs; track log._id) {
+              <tr class="log-row">
+                <td class="timestamp">
+                  {{ log.timestamp | date: 'medium' }}
+                </td>
+                <td class="action">
+                  <span class="badge" [ngClass]="getActionBadgeClass(log.action)">
+                    {{ getActionIcon(log.action) }} {{ log.action }}
+                  </span>
+                </td>
+                <td class="target-user">
+                  @if (log.targetUserId) {
+                    <div class="user-info">
+                      <strong>{{ log.targetUserId.username }}</strong>
+                      <br>
+                      <small>{{ log.targetUserId.email }}</small>
+                    </div>
+                  } @else {
+                    <span class="text-muted">-</span>
+                  }
+                </td>
+                <td class="performed-by">
+                  <div class="user-info">
+                    <strong>{{ log.performedBy.username }}</strong>
+                    <br>
+                    <small>{{ log.performedBy.email }}</small>
+                  </div>
+                </td>
+                <td class="details">
+                 @if (log.details && (log.details | keyvalue).length > 0) {
+  <details class="details-dropdown">
+    <summary>View Details</summary>
+    <pre>{{ log.details | json }}</pre>
+  </details>
+} @else {
+  <span class="text-muted">-</span>
+}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>
