@@ -101,7 +101,7 @@
       </li>
 
       <li *ngIf="isLoggedIn">
-        <span class="menu-item user-info">
+        <span class="menu-item user-info" (click)="navigateToProfile()">
           <span class="user-avatar">{{ currentUsername?.charAt(0)?.toUpperCase() || 'U' }}</span>
           <span class="menu-text">{{ currentUsername }}</span>
         </span>

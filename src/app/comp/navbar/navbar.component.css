@@ -127,12 +127,12 @@
   }
 
   .user-info {
-    cursor: default;
+    cursor: pointer;
     color: #2c3e50;
   }
 
   .user-info:hover {
-    background: transparent;
+    background: #e8ecf1;
   }
 
   .user-avatar {

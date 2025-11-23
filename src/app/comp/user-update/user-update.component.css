@@ -150,7 +150,6 @@
   justify-content: center;
   gap: 8px;
   background: linear-gradient(135deg, var(--blue-accent) 0%, var(--purple-accent) 100%);
-  color: white;
   box-shadow: 0 8px 24px rgba(99, 102, 241, 0.25);
 }
 

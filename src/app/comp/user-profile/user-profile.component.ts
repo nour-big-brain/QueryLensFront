@@ -17,6 +17,8 @@ user!:User | null
   ngOnInit(): void {
     this.user=this.authService.getCurrentUser()
   }
-  onUpdateCredentials(){}
+  onUpdateCredentials(){
+    this.router.navigate(['/user-update']);
+  }
 
 }

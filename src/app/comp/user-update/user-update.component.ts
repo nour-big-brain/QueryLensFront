@@ -3,6 +3,7 @@ import { AuthService, User } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { UserService } from '../../services/user.service';
 
 @Component({
   selector: 'app-user-update',
@@ -16,6 +17,7 @@ export class UserUpdateComponent implements OnInit {
   private router: Router = inject(Router);
   loggedInUser!: User | null;
   private fb: FormBuilder = inject(FormBuilder);
+  private userService:UserService=inject(UserService);
   editForm!: FormGroup;
   passwordForm!: FormGroup;
   showPasswordModal = false;
@@ -33,12 +35,28 @@ export class UserUpdateComponent implements OnInit {
 
     this.passwordForm = this.fb.nonNullable.group({
       oldPassword: ['', Validators.required],
-      newPassword: ['', [Validators.required, Validators.minLength(6)]]
+      newPassword: ['', [Validators.required]]
     });
   }
 
   onSubmit() {
-    // Handle username update
+    let updatedUser={
+      username:this.editForm.get("username")?.value,
+    }
+    if(this.loggedInUser){
+      this.userService.updateUser(this.loggedInUser._id,updatedUser.username).subscribe(
+        res=>{
+          console.log('this is the res',res);
+          alert('Credentials succesfully updated');
+          this.authService.logout();
+        },
+        err=>{
+          console.log(err);
+          alert('An error occurred while updating credentials');
+        }
+      )
+    }
+    
   }
 
   closePasswordModal() {
@@ -47,11 +65,20 @@ export class UserUpdateComponent implements OnInit {
   }
 
   onChangePassword() {
-    // Handle password update
-    if (this.passwordForm.valid) {
-      const { oldPassword, newPassword } = this.passwordForm.value;
-      // Call your AuthService method to update password here
-      this.closePasswordModal();
+  if (this.passwordForm.valid && this.loggedInUser) {
+    const { oldPassword, newPassword } = this.passwordForm.value;
+    this.userService
+      .changePassword(this.loggedInUser._id, oldPassword, newPassword)
+      .subscribe(
+        res => {
+          alert(res.message || 'Password updated successfully!');
+          this.authService.logout(); // log out for security, user must log in with new password
+          this.closePasswordModal();
+        },
+        err => {
+          alert(err.message || 'Failed to update password');
+        }
+      );
     }
   }
 }

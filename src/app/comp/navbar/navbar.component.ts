@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { ThemesService } from '../../services/themes.service';
 import { LanguageService } from '../../services/language.service';
 import { AuthService } from '../../services/auth.service';
@@ -17,6 +17,7 @@ export class NavbarComponent implements OnInit {
   public themeService = inject(ThemesService);
   private languageService = inject(LanguageService);
   private authService = inject(AuthService);
+  private router:Router=inject(Router);
 
   public isDark: boolean = false;
   public menuOpen: boolean = false;
@@ -70,5 +71,8 @@ export class NavbarComponent implements OnInit {
   // Get current language
   get currentLang(): string {
     return this.languageService.currentLang;
+  }
+  navigateToProfile(){
+    this.router.navigate(['/profile']);
   }
 }
