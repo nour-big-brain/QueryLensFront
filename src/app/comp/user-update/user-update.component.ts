@@ -8,7 +8,7 @@ import { UserService } from '../../services/user.service';
 @Component({
   selector: 'app-user-update',
   standalone: true,
-  imports: [ReactiveFormsModule,CommonModule],
+  imports: [ReactiveFormsModule, CommonModule],
   templateUrl: './user-update.component.html',
   styleUrl: './user-update.component.css'
 })
@@ -17,7 +17,7 @@ export class UserUpdateComponent implements OnInit {
   private router: Router = inject(Router);
   loggedInUser!: User | null;
   private fb: FormBuilder = inject(FormBuilder);
-  private userService:UserService=inject(UserService);
+  private userService: UserService = inject(UserService);
   editForm!: FormGroup;
   passwordForm!: FormGroup;
   showPasswordModal = false;
@@ -40,23 +40,29 @@ export class UserUpdateComponent implements OnInit {
   }
 
   onSubmit() {
-    let updatedUser={
-      username:this.editForm.get("username")?.value,
-    }
-    if(this.loggedInUser){
-      this.userService.updateUser(this.loggedInUser._id,updatedUser.username).subscribe(
-        res=>{
-          console.log('this is the res',res);
-          alert('Credentials succesfully updated');
-          this.authService.logout();
+    const updatedUser = {
+      username: this.editForm.get("username")?.value,
+    };
+    
+    if (this.loggedInUser) {
+      this.userService.updateUser(this.loggedInUser._id, updatedUser.username).subscribe({
+        next: (res) => {
+          console.log('Update response:', res);
+          
+          // Update the user in AuthService so all components that subscribe to user$ get notified
+          this.authService.updateCurrentUser({
+            username: updatedUser.username
+          });
+          
+          alert('Credentials successfully updated');
+          this.router.navigate(['/user-profile']);
         },
-        err=>{
-          console.log(err);
+        error: (err) => {
+          console.error('Update error:', err);
           alert('An error occurred while updating credentials');
         }
-      )
+      });
     }
-    
   }
 
   closePasswordModal() {
@@ -65,20 +71,20 @@ export class UserUpdateComponent implements OnInit {
   }
 
   onChangePassword() {
-  if (this.passwordForm.valid && this.loggedInUser) {
-    const { oldPassword, newPassword } = this.passwordForm.value;
-    this.userService
-      .changePassword(this.loggedInUser._id, oldPassword, newPassword)
-      .subscribe(
-        res => {
-          alert(res.message || 'Password updated successfully!');
-          this.authService.logout(); // log out for security, user must log in with new password
-          this.closePasswordModal();
-        },
-        err => {
-          alert(err.message || 'Failed to update password');
-        }
-      );
+    if (this.passwordForm.valid && this.loggedInUser) {
+      const { oldPassword, newPassword } = this.passwordForm.value;
+      this.userService
+        .changePassword(this.loggedInUser._id, oldPassword, newPassword)
+        .subscribe({
+          next: (res) => {
+            alert(res.message || 'Password updated successfully!');
+            this.authService.logout(); // log out for security, user must log in with new password
+            this.closePasswordModal();
+          },
+          error: (err) => {
+            alert(err.message || 'Failed to update password');
+          }
+        });
     }
   }
 }

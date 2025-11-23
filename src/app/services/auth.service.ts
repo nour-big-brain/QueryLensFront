@@ -104,6 +104,19 @@ export class AuthService {
     }
   }
 
+  /**
+   * Update the current user in the BehaviorSubject
+   * Call this after successfully updating user data
+   */
+  updateCurrentUser(updatedUser: Partial<User>): void {
+    const currentUser = this.userSubject.value;
+    if (currentUser) {
+      const newUser = { ...currentUser, ...updatedUser };
+      this.userSubject.next(newUser);
+      console.log('✅ User updated in AuthService:', newUser);
+    }
+  }
+
   getToken(): string | null {
     return localStorage.getItem(this.tokenKey);
   }

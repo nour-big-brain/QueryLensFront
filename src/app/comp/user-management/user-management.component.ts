@@ -1,14 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { UserService } from '../../services/user.service';
-import { RoleService } from '../../services/role.service';
+import { Role, RoleService } from '../../services/role.service';
 import { User } from '../../models/user';
 import { NgClass, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-interface Role {
-  _id: string;
-  name: string;
-}
 
 @Component({
   selector: 'app-users',
@@ -62,14 +58,14 @@ export class UserManagementComponent implements OnInit {
   }
 
   loadRoles(): void {
-    this.roleService.getRoles().subscribe({
-      next: (data: Role[]) => {
-        this.roles = data;
-      },
-      error: (err) => {
-        console.error('Failed to load roles:', err);
-      }
-    });
+   this.roleService.getRoles().subscribe({
+  next: (data) => {
+    this.roles = data;
+  },
+  error: (err) => {
+    console.error('Failed to load roles:', err);
+  }
+});
   }
 
   filterUsers(): void {
