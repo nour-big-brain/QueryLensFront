@@ -1,27 +1,70 @@
-# QuerylensFrontendAngular
+Query Lens — Frontend
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.2.4.
+Angular Application for the Enhanced BI Platform
 
-## Development server
+This repository contains the frontend interface for Query Lens, a group project focused on delivering an improved Business Intelligence platform built on top of Metabase.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+The frontend is developed using Angular, providing a clean, responsive, and user-friendly experience for exploring data, interacting with dashboards, and visualizing insights served by the backend API.
 
-## Code scaffolding
+**Features
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+Modern Angular UI for BI dashboards
 
-## Build
+Integration with backend REST APIs
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+User authentication & secured routes
 
-## Running unit tests
+Dynamic, metabase-driven visualizations
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+Clean and responsive layout
 
-## Running end-to-end tests
+Modular and maintainable Angular architecture
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+**Tech Stack
 
-## Further help
+Angular 18
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+TypeScript
+
+Bootstrap
+
+REST API integration
+
+Angular Router & HttpClient
+
+**Installation & Setup
+1. Clone the repository
+git clone <this-repo-url>
+cd qquery-lens-frontend
+
+2. Install dependencies
+npm install
+
+3. Run the development server
+ng serve
+
+
+The app will be available at:
+http://localhost:4200
+
+** Project Structure (Simplified)
+src/
+ ├── app/
+ │    ├── comp/
+ │    ├── models/
+ │    ├── services/
+ │    ├── guards/
+ │    └── app.module.ts
+ ├── assets/
+ └── index.html
+
+**Backend Repository
+
+Backend API: <backend-repo-url>
+
+**Team
+
+Query Lens — Group Project
+Nour Bouraoui
+Yasmine Bouaita
+Wajih Ben Alaya
